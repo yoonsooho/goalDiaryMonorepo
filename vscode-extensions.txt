@@ -1,0 +1,13 @@
+bradlc.vscode-tailwindcss
+cweijan.dbclient-jdbc
+cweijan.vscode-database-client2
+dbaeumer.vscode-eslint
+dsznajder.es7-react-js-snippets
+esbenp.prettier-vscode
+formulahendry.auto-close-tag
+jumail.headwind
+ms-vscode.vscode-typescript-next
+naumovs.color-highlight
+pranaygp.vscode-css-peek
+redwan-hossain.auto-rename-tag-clone
+steoates.autoimport
