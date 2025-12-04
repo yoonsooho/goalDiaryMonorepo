@@ -9,11 +9,12 @@ import {
 } from 'typeorm';
 import { User } from 'src/users/users.entity';
 import { RoutineCompletion } from './routine-completion.entity';
+import { SharedRoutine } from '@repo/types';
 
 // Frequency enum을 제거하고 schedule_date로 대체
 
 @Entity('routines')
-export class Routine {
+export class Routine implements SharedRoutine {
   @PrimaryGeneratedColumn()
   id: number;
 

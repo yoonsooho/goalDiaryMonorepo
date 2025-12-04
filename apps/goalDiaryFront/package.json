@@ -44,7 +44,8 @@
         "react-resizable": "^3.0.5",
         "tailwind-merge": "^3.3.1",
         "tailwindcss-animate": "^1.0.7",
-        "zod": "^4.1.5"
+        "zod": "^4.1.5",
+        "@repo/types": "workspace:*"
     },
     "devDependencies": {
         "@playwright/test": "^1.56.1",
