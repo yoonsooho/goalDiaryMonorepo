@@ -1,20 +1,21 @@
 {
-  "name": "todo-dnd-monorepo",
-  "version": "0.0.0",
-  "private": true,
-  "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
-  },
-  "devDependencies": {
-    "turbo": "latest",
-    "prettier": "latest"
-  },
-  "packageManager": "pnpm@9.0.0",
-  "engines": {
-    "node": ">=18"
-  }
+    "name": "todo-dnd-monorepo",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "build": "turbo run build",
+        "dev": "turbo run dev",
+        "lint": "turbo run lint",
+        "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+        "prepare": "husky install"
+    },
+    "devDependencies": {
+        "husky": "^8.0.0",
+        "prettier": "latest",
+        "turbo": "latest"
+    },
+    "packageManager": "pnpm@9.0.0",
+    "engines": {
+        "node": ">=18"
+    }
 }
-
