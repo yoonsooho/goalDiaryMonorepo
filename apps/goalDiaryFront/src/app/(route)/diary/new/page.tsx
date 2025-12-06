@@ -45,7 +45,6 @@ const NewDiaryPage = () => {
     });
 
     const onSubmit = (data: any) => {
-        console.log(data);
         postDiary(data, {
             onSuccess: async () => {
                 await queryClient.invalidateQueries({ queryKey: ["diary"] });

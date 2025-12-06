@@ -81,7 +81,6 @@ export default function DiaryDetailPage() {
 
     useEffect(() => {
         if (diary && diary.date && diary.time && diary.content) {
-            console.log("diary", diary);
             setValue("date", diary?.date);
             setValue("time", diary?.time);
             setValue("content", diary?.content);

@@ -70,8 +70,7 @@ export class ScheduleService {
           seq: 2,
           schedule: savedSchedule,
         });
-        console.log('post1', post1);
-        console.log('post2', post2);
+
 
         await Promise.all([
           manager.save(Post, post1),

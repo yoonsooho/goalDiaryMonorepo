@@ -15,7 +15,6 @@ const useBoardHandler = (setItems: React.Dispatch<React.SetStateAction<boards>>,
             { title: boardName },
             {
                 onSuccess: (newBoard) => {
-                    console.log("보드 생성 성공:", newBoard);
                     queryClient.invalidateQueries({ queryKey: ["posts", scheduleId] });
                 },
                 onError: (error) => {
@@ -52,10 +51,8 @@ const useBoardHandler = (setItems: React.Dispatch<React.SetStateAction<boards>>,
 
     // 보드 삭제
     const handleDeleteBoard = (boardId: number) => {
-        console.log("삭제 시도:", boardId);
         deletePosts(boardId, {
             onSuccess: (data) => {
-                console.log("삭제 성공:", data);
                 queryClient.invalidateQueries({ queryKey: ["posts", scheduleId] });
             },
             onError: (error) => {

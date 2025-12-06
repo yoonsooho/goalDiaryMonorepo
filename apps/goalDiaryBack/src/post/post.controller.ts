@@ -55,7 +55,7 @@ export class PostController {
     }
     // seq 순서로 정렬된 posts 조회
     const posts = await this.postService.findByScheduleOrderedBySeq(scheduleId);
-    console.log('posts', posts);
+ 
 
     // posts가 없으면 빈 배열 반환
     return posts || [];

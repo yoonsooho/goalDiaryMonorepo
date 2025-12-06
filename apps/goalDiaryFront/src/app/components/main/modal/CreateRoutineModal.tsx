@@ -102,7 +102,6 @@ export default function CreateRoutineModal({ isOpen, onClose, onSubmit }: Create
                             id="category"
                             {...register("category", {
                                 setValueAs: (value) => {
-                                    console.log("value", value);
                                     if (!value || value.length === 0) return [];
                                     return value
                                         .split(",")
