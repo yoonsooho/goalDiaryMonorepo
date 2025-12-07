@@ -39,13 +39,6 @@ export function SortableItem({
     const [editEndTime, setEditEndTime] = useState(endTime || "");
     const editRef = useRef<HTMLTextAreaElement>(null);
     const handleSubmit = () => {
-        if (!editStartTime || !editEndTime) {
-            return toast({
-                title: "시간 설정 오류",
-                description: "시작 시간과 종료 시간을 입력해주세요.",
-                variant: "destructive",
-            });
-        }
         if (anotherContentTimeLists && editStartTime && editEndTime) {
             const otherItems = anotherContentTimeLists(id);
 
@@ -86,12 +79,12 @@ export function SortableItem({
                 return;
             }
         }
-
-        handleEditItem?.(id, {
+        let contentUpdateForm = {
             text: editValue,
-            startTime: editStartTime,
-            endTime: editEndTime,
-        });
+            startTime: editStartTime ? editStartTime : undefined,
+            endTime: editEndTime ? editEndTime : undefined,
+        };
+        handleEditItem?.(id, contentUpdateForm);
         setIsEditMode(false);
     };
 

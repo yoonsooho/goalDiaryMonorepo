@@ -32,20 +32,20 @@ export const metadata: Metadata = {
         siteName: "GoalDiary",
         locale: "ko_KR",
         type: "website",
-        images: [
-            {
-                url: "/og-image.jpg",
-                width: 1200,
-                height: 630,
-                alt: "GoalDiary - 목표와 일기를 함께하는 작업 관리 도구",
-            },
-        ],
+        // images: [
+        //     {
+        //         url: "/og-image.jpg",
+        //         width: 1200,
+        //         height: 630,
+        //         alt: "GoalDiary - 목표와 일기를 함께하는 작업 관리 도구",
+        //     },
+        // ],
     },
     twitter: {
         card: "summary_large_image",
         title: "GoalDiary - 목표와 일기를 함께하는 스마트 작업관리",
         description: "개인의 목표, 명언, 일기와 팀 협업을 하나로 통합한 혁신적인 플랫폼",
-        images: ["/og-image.jpg"],
+        // images: ["/og-image.jpg"],
     },
     verification: {
         google: "JxjjD7DM8P_qMCHuPj4jjk7qqIk8iGFA2td5hWndwh8",
