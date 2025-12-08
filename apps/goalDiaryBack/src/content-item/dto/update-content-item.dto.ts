@@ -7,6 +7,7 @@ import {
   IsString,
   ValidateNested,
   Matches,
+  IsBoolean,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -48,4 +49,8 @@ export class UpdateContentItemTextDto {
     message: 'endTime은 HH:mm 형식이어야 합니다. (예: 09:30, 23:45)',
   })
   endTime?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isCompleted?: boolean;
 }

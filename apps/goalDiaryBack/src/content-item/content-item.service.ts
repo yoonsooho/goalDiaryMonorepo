@@ -88,6 +88,9 @@ export class ContentItemService {
     if (updateContentItemTextDto.endTime) {
       contentItem.endTime = updateContentItemTextDto.endTime;
     }
+    if (updateContentItemTextDto.isCompleted) {
+      contentItem.isCompleted = updateContentItemTextDto.isCompleted;
+    }
     return this.contentItemRepository.save(contentItem);
   }
 

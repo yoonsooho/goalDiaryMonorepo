@@ -54,4 +54,7 @@ export class ContentItem {
     transformer: timeTransformer,
   })
   endTime?: string; // DB에는 HH:mm:ss로 저장, 조회 시 HH:mm으로 변환
+
+  @Column({ type: 'boolean', nullable: true, default: false })
+  isCompleted?: boolean;
 }
