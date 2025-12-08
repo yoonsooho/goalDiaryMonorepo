@@ -12,6 +12,7 @@ export type patchContentItemsType = {
     text: string;
     startTime?: string;
     endTime?: string;
+    isCompleted?: boolean;
 };
 
 export type moveContentItems = {
