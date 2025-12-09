@@ -6,5 +6,5 @@ export interface DndHelpers {
     findBoard: (itemId: number) => board | undefined;
     getBoardItems: (
         boardIndex: number
-    ) => { id: number; text: string; startTime: string | null; endTime: string | null }[];
+    ) => { id: number; text: string; startTime: string | null; endTime: string | null; isCompleted: boolean }[];
 }

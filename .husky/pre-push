@@ -3,3 +3,5 @@
 
 pnpm turbo run test --filter=goalDiaryFront
 
+
+pnpm turbo run typecheck --filter=goalDiaryFront

@@ -134,15 +134,15 @@ const useDndHandlers = (
             newItems[overBoardIdx].contentItems = isOverBoard
                 ? [...overItems, activeItem]
                 : overItems.length === 0
-                ? [activeItem]
-                : [
-                      ...overItems.slice(
-                          0,
-                          overItems.findIndex((item) => item.id === over.id)
-                      ),
-                      activeItem,
-                      ...overItems.slice(overItems.findIndex((item) => item.id === over.id)),
-                  ];
+                  ? [activeItem]
+                  : [
+                        ...overItems.slice(
+                            0,
+                            overItems.findIndex((item) => item.id === over.id)
+                        ),
+                        activeItem,
+                        ...overItems.slice(overItems.findIndex((item) => item.id === over.id)),
+                    ];
 
             return newItems;
         });
