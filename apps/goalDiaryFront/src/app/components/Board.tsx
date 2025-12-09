@@ -13,7 +13,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 interface BoardProps {
     id: number;
-    items: { id: number; text: string; startTime: string | null; endTime: string | null }[];
+    items: { id: number; text: string; startTime: string | null; endTime: string | null; isCompleted: boolean }[];
     title: string;
     isDragOverlay?: boolean;
     handleEditBoard?: (boardId: number, newName: string) => void;
@@ -68,6 +68,8 @@ export function Board({
         transform: CSS.Transform.toString(transform),
         transition: isDragOverlay ? "none" : transition,
     };
+    console.log("items", items);
+
     return (
         <div
             ref={setNodeRef}
@@ -131,6 +133,7 @@ export function Board({
                             name={item.text}
                             startTime={item.startTime || null}
                             endTime={item.endTime || null}
+                            isCompleted={item.isCompleted || false}
                             handleDeleteItem={handleDeleteItem}
                             handleEditItem={handleEditItem}
                             anotherContentTimeLists={anotherContentTimeLists}

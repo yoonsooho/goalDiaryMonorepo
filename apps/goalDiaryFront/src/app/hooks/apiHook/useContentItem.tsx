@@ -39,6 +39,7 @@ export const usePatchContentItems = () => {
     return useMutation({
         mutationKey: ["contentItems"],
         mutationFn: ({ contentItemId, data }: { contentItemId: number; data: patchContentItemsType }) => {
+            console.log("data", data);
             return patchContentItems(contentItemId, data);
         },
     });

@@ -17,6 +17,7 @@ export const postContentItems = async (data: postContentItemsType) => {
 };
 
 export const patchContentItems = async (contentItemId: number, data: patchContentItemsType) => {
+    console.log("patchContentItemsData", contentItemId, data);
     return await commonApiJson(`/api/content-items/${contentItemId}`, {
         method: "PATCH",
         body: data,

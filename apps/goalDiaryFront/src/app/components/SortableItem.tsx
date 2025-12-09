@@ -45,14 +45,9 @@ export function SortableItem({
     // [추가] 내부 완료 상태 관리 (Props가 없을 때도 UI 동작 확인용)
     const [isChecked, setIsChecked] = useState(isCompleted);
 
-    // Props가 변경되면 내부 상태 동기화
-    useEffect(() => {
-        setIsChecked(isCompleted);
-    }, [isCompleted]);
-
     const editRef = useRef<HTMLTextAreaElement>(null);
 
-    const handleSubmit = () => {
+    const handleSubmit = (contentUpdateForm: patchContentItemsType) => {
         if (anotherContentTimeLists && editStartTime && editEndTime) {
             const otherItems = anotherContentTimeLists(id);
             const currentStart = dayjs(`2000-01-01 ${editStartTime}`);
@@ -83,13 +78,10 @@ export function SortableItem({
                 return;
             }
         }
-        let contentUpdateForm = {
-            text: editValue,
-            startTime: editStartTime ? editStartTime : undefined,
-            endTime: editEndTime ? editEndTime : undefined,
-            isCompleted: isChecked,
-        };
+
+        console.log("contentUpdateForm", contentUpdateForm);
         handleEditItem?.(id, contentUpdateForm);
+
         setIsEditMode(false);
     };
 
@@ -127,8 +119,15 @@ export function SortableItem({
                 <button
                     onClick={(e) => {
                         e.stopPropagation(); // 드래그 이벤트 전파 방지
-                        setIsChecked(!isChecked);
-                        handleSubmit();
+                        let newIsChecked = !isChecked;
+                        setIsChecked(newIsChecked);
+                        let contentUpdateForm = {
+                            text: editValue,
+                            startTime: editStartTime ? editStartTime : undefined,
+                            endTime: editEndTime ? editEndTime : undefined,
+                            isCompleted: newIsChecked,
+                        };
+                        handleSubmit(contentUpdateForm);
                     }}
                     className={`
                         shrink-0 w-6 h-6 mt-1 rounded-full border-2 flex items-center justify-center transition-all duration-200
@@ -166,7 +165,13 @@ export function SortableItem({
                         className="p-1 mt-0.5 hover:bg-gray-100 rounded transition-colors shrink-0 opacity-50 hover:opacity-100"
                         onClick={(e) => {
                             e.preventDefault();
-                            setIsEditMode(!isEditMode);
+                            let contentUpdateForm = {
+                                text: editValue,
+                                startTime: editStartTime ? editStartTime : undefined,
+                                endTime: editEndTime ? editEndTime : undefined,
+                                isCompleted: isChecked,
+                            };
+                            handleSubmit(contentUpdateForm);
                         }}
                     >
                         <Image src={editIcon} alt="editIcon" width={18} height={18} />
@@ -179,7 +184,13 @@ export function SortableItem({
                             className="flex flex-col"
                             onSubmit={(e) => {
                                 e.preventDefault();
-                                handleSubmit();
+                                let contentUpdateForm = {
+                                    text: editValue,
+                                    startTime: editStartTime ? editStartTime : undefined,
+                                    endTime: editEndTime ? editEndTime : undefined,
+                                    isCompleted: isChecked,
+                                };
+                                handleSubmit(contentUpdateForm);
                             }}
                         >
                             {isEditMode ? (
@@ -190,7 +201,13 @@ export function SortableItem({
                                     onKeyDown={(e) => {
                                         if (e.key === "Enter" && !e.shiftKey) {
                                             e.preventDefault();
-                                            handleSubmit();
+                                            let contentUpdateForm = {
+                                                text: editValue,
+                                                startTime: editStartTime ? editStartTime : undefined,
+                                                endTime: editEndTime ? editEndTime : undefined,
+                                                isCompleted: isChecked,
+                                            };
+                                            handleSubmit(contentUpdateForm);
                                         }
                                     }}
                                     className="text-lg font-bold w-full resize-none border rounded p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
@@ -238,7 +255,13 @@ export function SortableItem({
                                         className="text-xs text-blue-600 font-medium hover:underline px-2"
                                         onClick={() => {
                                             setIsEditMode(true);
-                                            handleSubmit();
+                                            let contentUpdateForm = {
+                                                text: editValue,
+                                                startTime: editStartTime ? editStartTime : undefined,
+                                                endTime: editEndTime ? editEndTime : undefined,
+                                                isCompleted: isChecked,
+                                            };
+                                            handleSubmit(contentUpdateForm);
                                         }}
                                     >
                                         저장
