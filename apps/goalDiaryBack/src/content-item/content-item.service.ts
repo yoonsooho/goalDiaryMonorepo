@@ -82,15 +82,16 @@ export class ContentItemService {
 
     contentItem.text = updateContentItemTextDto.text;
 
-    if (updateContentItemTextDto.startTime) {
+    if (updateContentItemTextDto.startTime !== undefined) {
       contentItem.startTime = updateContentItemTextDto.startTime;
     }
-    if (updateContentItemTextDto.endTime) {
+    if (updateContentItemTextDto.endTime !== undefined) {
       contentItem.endTime = updateContentItemTextDto.endTime;
     }
-    if (updateContentItemTextDto.isCompleted) {
+    if (updateContentItemTextDto.isCompleted !== undefined) {
       contentItem.isCompleted = updateContentItemTextDto.isCompleted;
     }
+
     return this.contentItemRepository.save(contentItem);
   }
 
