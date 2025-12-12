@@ -1,9 +1,11 @@
 import { Post } from 'src/post/post.entity';
 import { ScheduleUser } from 'src/schedule-user/entities/schedule-user.entity';
+import { Team } from 'src/team/entities/team.entity';
 import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -25,6 +27,12 @@ export class Schedule {
 
   @OneToMany(() => Post, (post) => post.schedule)
   posts: Post[];
+
+  @ManyToOne(() => Team, (team) => team.schedules, {
+    nullable: true,
+    onDelete: 'SET NULL',
+  })
+  team?: Team;
 
   @Column({ type: 'date', nullable: false })
   startDate: string;

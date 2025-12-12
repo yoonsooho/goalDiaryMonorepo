@@ -54,7 +54,9 @@ describe('ContentItemService', () => {
     }).compile();
 
     service = module.get<ContentItemService>(ContentItemService);
-    contentItemRepository = module.get<Repository<ContentItem>>(getRepositoryToken(ContentItem));
+    contentItemRepository = module.get<Repository<ContentItem>>(
+      getRepositoryToken(ContentItem),
+    );
     postRepository = module.get<Repository<Post>>(getRepositoryToken(Post));
   });
 
@@ -86,7 +88,9 @@ describe('ContentItemService', () => {
         text: 'Test content item text',
         post: mockPost,
       });
-      expect(mockContentItemRepository.save).toHaveBeenCalledWith(mockContentItem);
+      expect(mockContentItemRepository.save).toHaveBeenCalledWith(
+        mockContentItem,
+      );
       expect(result).toEqual(mockContentItem);
     });
 
@@ -147,7 +151,9 @@ describe('ContentItemService', () => {
 
       await service.remove(1);
 
-      expect(mockContentItemRepository.remove).toHaveBeenCalledWith(mockContentItem);
+      expect(mockContentItemRepository.remove).toHaveBeenCalledWith(
+        mockContentItem,
+      );
     });
   });
 });

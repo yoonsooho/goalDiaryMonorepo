@@ -6,7 +6,11 @@ import { Schedule } from 'src/schedule/schedule.entity';
 import { User } from 'src/users/users.entity';
 import { ScheduleUser } from 'src/schedule-user/entities/schedule-user.entity';
 import { Post } from 'src/post/post.entity';
-import { Repository } from 'typeorm';
+import { Repository, In } from 'typeorm';
+import { ScheduleGateway } from './schedule.gateway';
+import { TeamService } from 'src/team/team.service';
+import { TeamUser } from 'src/team/entities/team-user.entity';
+import { Team } from 'src/team/entities/team.entity';
 
 @Injectable()
 export class ScheduleService {
@@ -19,6 +23,10 @@ export class ScheduleService {
     private scheduleUserRepository: Repository<ScheduleUser>,
     @InjectRepository(Post)
     private postRepository: Repository<Post>,
+    @InjectRepository(TeamUser)
+    private teamUserRepository: Repository<TeamUser>,
+    private readonly scheduleGateway: ScheduleGateway,
+    private readonly teamService: TeamService,
   ) {}
 
   /**
@@ -38,16 +46,38 @@ export class ScheduleService {
         });
         if (!user) throw new Error('User not found');
 
-        // 2. 스케줄 생성
+        // 2. teamId가 있으면 팀 멤버 권한 확인
+        let team = null;
+        if (createScheduleDto.teamId) {
+          team = await manager.findOne(Team, {
+            where: { id: createScheduleDto.teamId },
+          });
+          if (!team) throw new Error('Team not found');
+
+          // 팀 멤버인지 확인 (ACTIVE 상태만) - 트랜잭션 내에서 조회
+          const teamUser = await manager.findOne(TeamUser, {
+            where: {
+              team: { id: createScheduleDto.teamId },
+              user: { id: createScheduleDto.usersId },
+              status: 'ACTIVE',
+            },
+          });
+          if (!teamUser) {
+            throw new ForbiddenException('You are not a member of this team');
+          }
+        }
+
+        // 3. 스케줄 생성 (개인 일정 또는 팀 일정)
         const createdSchedule = manager.create(Schedule, {
           title: createScheduleDto.title,
           startDate: createScheduleDto.startDate,
           endDate:
             createScheduleDto.endDate === '' ? null : createScheduleDto.endDate,
+          team: team || undefined,
         });
         const savedSchedule = await manager.save(Schedule, createdSchedule);
 
-        // 3. 스케줄-유저 연결
+        // 4. 스케줄-유저 연결
         const scheduleUser = manager.create(ScheduleUser, {
           user,
           schedule: savedSchedule,
@@ -55,7 +85,7 @@ export class ScheduleService {
         });
         await manager.save(ScheduleUser, scheduleUser);
 
-        // 4. 기본 Post 2개 생성
+        // 5. 기본 Post 2개 생성
         const timestamp = Date.now();
         const post1 = manager.create(Post, {
           id: `post-${timestamp}-1`,
@@ -71,11 +101,16 @@ export class ScheduleService {
           schedule: savedSchedule,
         });
 
-
         await Promise.all([
           manager.save(Post, post1),
           manager.save(Post, post2),
         ]);
+
+        // 브로드캐스트 (생성 이벤트)
+        this.scheduleGateway.emitScheduleUpdated(savedSchedule.id, {
+          type: 'created',
+          scheduleId: savedSchedule.id,
+        });
 
         return savedSchedule;
       },
@@ -84,14 +119,40 @@ export class ScheduleService {
 
   /**
    * 내가 속한 스케줄 조회
+   * - ScheduleUser로 직접 공유된 일정
+   * - 팀 멤버인 경우 해당 팀의 모든 일정
    */
   async findAllByUserId(userId: string): Promise<Schedule[]> {
+    // 1. ScheduleUser로 직접 공유된 일정 조회
     const scheduleUsers = await this.scheduleUserRepository.find({
       where: { user: { id: userId } },
-      relations: ['schedule'],
+      relations: ['schedule', 'schedule.team'],
     });
+    const directSchedules = scheduleUsers.map((su) => su.schedule);
 
-    return scheduleUsers.map((su) => su.schedule);
+    // 2. 사용자가 속한 팀 목록 조회 (ACTIVE 상태만)
+    const teamMemberships = await this.teamUserRepository.find({
+      where: { user: { id: userId }, status: 'ACTIVE' },
+      relations: ['team'],
+    });
+    const teamIds = teamMemberships.map((tm) => tm.team.id);
+
+    // 3. 팀 일정 조회 (teamId가 있고, 해당 팀에 속한 일정)
+    let teamSchedules: Schedule[] = [];
+    if (teamIds.length > 0) {
+      teamSchedules = await this.scheduleRepository.find({
+        where: { team: { id: In(teamIds) } },
+        relations: ['team'],
+      });
+    }
+
+    // 4. 두 결과를 합치고 중복 제거 (id 기준)
+    const allSchedules = [...directSchedules, ...teamSchedules];
+    const uniqueSchedules = Array.from(
+      new Map(allSchedules.map((schedule) => [schedule.id, schedule])).values(),
+    );
+
+    return uniqueSchedules;
   }
 
   /**
@@ -106,7 +167,7 @@ export class ScheduleService {
     // 1. ScheduleUser에서 권한 확인
     const scheduleUser = await this.scheduleUserRepository.findOne({
       where: { user: { id: userId }, schedule: { id: scheduleId } },
-      relations: ['schedule'],
+      relations: ['schedule', 'schedule.team'],
     });
 
     if (!scheduleUser) throw new Error('공유된 스케줄이 아닙니다.');
@@ -127,7 +188,21 @@ export class ScheduleService {
         updateScheduleDto.endDate === '' ? null : updateScheduleDto.endDate;
     }
 
-    return this.scheduleRepository.save(schedule);
+    const saved = await this.scheduleRepository.save(schedule);
+
+    // team 관계를 다시 로드
+    const scheduleWithTeam = await this.scheduleRepository.findOne({
+      where: { id: scheduleId },
+      relations: ['team'],
+    });
+
+    // 브로드캐스트 (수정 이벤트)
+    this.scheduleGateway.emitScheduleUpdated(scheduleId, {
+      type: 'updated',
+      scheduleId,
+    });
+
+    return scheduleWithTeam || saved;
   }
 
   /**
@@ -149,6 +224,66 @@ export class ScheduleService {
     }
 
     const result = await this.scheduleRepository.delete(scheduleId);
+
+    // 브로드캐스트 (삭제 이벤트)
+    if (result.affected) {
+      this.scheduleGateway.emitScheduleUpdated(scheduleId, {
+        type: 'deleted',
+        scheduleId,
+      });
+    }
+
     return result.affected !== 0;
+  }
+
+  /**
+   * 스케줄을 팀 일정으로 전환
+   * - 권한 체크 (canEdit = true 인 경우만)
+   * - 팀 이름으로 팀 찾기, 없으면 생성
+   */
+  async convertToTeam(
+    scheduleId: number,
+    userId: string,
+    teamName: string,
+  ): Promise<Schedule> {
+    // 1. 권한 확인
+    const scheduleUser = await this.scheduleUserRepository.findOne({
+      where: { user: { id: userId }, schedule: { id: scheduleId } },
+      relations: ['schedule', 'schedule.team'],
+    });
+
+    if (!scheduleUser) throw new Error('공유된 스케줄이 아닙니다.');
+    if (!scheduleUser.canEdit) {
+      throw new ForbiddenException('수정 권한이 없습니다.');
+    }
+
+    // 2. 팀 찾기 또는 생성
+    const team = await this.teamService.findOrCreateTeamByName(
+      teamName,
+      userId,
+    );
+
+    // 3. 스케줄에 팀 할당
+    const schedule = scheduleUser.schedule;
+    schedule.team = team;
+    await this.scheduleRepository.save(schedule);
+
+    // team 관계를 다시 로드하여 반환
+    const scheduleWithTeam = await this.scheduleRepository.findOne({
+      where: { id: scheduleId },
+      relations: ['team'],
+    });
+
+    // 브로드캐스트 (수정 이벤트)
+    this.scheduleGateway.emitScheduleUpdated(scheduleId, {
+      type: 'updated',
+      scheduleId,
+    });
+
+    if (!scheduleWithTeam) {
+      throw new Error('Schedule not found after update');
+    }
+
+    return scheduleWithTeam;
   }
 }

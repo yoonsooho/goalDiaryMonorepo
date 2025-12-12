@@ -2,13 +2,15 @@ import { GetSchedulesType, PostSchedulesType } from "@/type/ScheduleType";
 import React, { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { EditIcon } from "lucide-react";
-import { Trash } from "lucide-react";
+import { EditIcon, Trash, Users, UserPlus } from "lucide-react";
 import { ConfirmModalProps, useConfirmModal } from "@/components/ui/confirm-modal";
-import { useDeleteSchedules, useUpdateSchedules } from "@/app/hooks/apiHook/useSchedules";
+import { useDeleteSchedules, useUpdateSchedules, useConvertScheduleToTeam } from "@/app/hooks/apiHook/useSchedules";
+import { useInviteTeamMember } from "@/app/hooks/apiHook/useTeams";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 import UpdateScheduleModal from "@/app/components/main/modal/UpdateScheduleModal";
+import ConvertToTeamModal from "@/app/components/main/modal/ConvertToTeamModal";
+import InviteTeamMemberModal from "@/app/components/main/modal/InviteTeamMemberModal";
 
 const ScheduleListItem = ({
     schedule,
@@ -23,7 +25,11 @@ const ScheduleListItem = ({
     const queryClient = useQueryClient();
     const { mutate: deleteSchedules } = useDeleteSchedules();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isConvertModalOpen, setIsConvertModalOpen] = useState(false);
+    const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const { mutate: updateSchedules } = useUpdateSchedules();
+    const { mutate: convertToTeam } = useConvertScheduleToTeam();
+    const { mutate: inviteTeamMember } = useInviteTeamMember();
     const handleDeleteSchedule = (id: string) => {
         deleteSchedules(id, {
             onSuccess: () => {
@@ -66,6 +72,53 @@ const ScheduleListItem = ({
             }
         );
     };
+    const handleConvertToTeam = (teamName: string) => {
+        convertToTeam(
+            { scheduleId: schedule.id, teamName },
+            {
+                onSuccess: () => {
+                    queryClient.invalidateQueries({ queryKey: ["schedules"] });
+                    toast({
+                        title: "팀으로 전환 완료",
+                        description: `"${schedule.title}" 일정이 "${teamName}" 팀 일정으로 전환되었습니다.`,
+                        variant: "default",
+                    });
+                    setIsConvertModalOpen(false);
+                },
+                onError: (error) => {
+                    toast({
+                        title: "팀으로 전환 실패",
+                        description: error.message,
+                        variant: "destructive",
+                    });
+                },
+            }
+        );
+    };
+    const handleInviteTeamMember = (userId: string) => {
+        if (!schedule.team) return;
+        inviteTeamMember(
+            { teamId: schedule.team.id, userId },
+            {
+                onSuccess: () => {
+                    queryClient.invalidateQueries({ queryKey: ["teamMembers", schedule.team?.id] });
+                    toast({
+                        title: "팀 초대 완료",
+                        description: "팀 멤버 초대가 완료되었습니다.",
+                        variant: "default",
+                    });
+                    setIsInviteModalOpen(false);
+                },
+                onError: (error: any) => {
+                    toast({
+                        title: "팀 초대 실패",
+                        description: error.message || "팀 멤버 초대에 실패했습니다.",
+                        variant: "destructive",
+                    });
+                },
+            }
+        );
+    };
     return (
         <>
             <UpdateScheduleModal
@@ -78,6 +131,19 @@ const ScheduleListItem = ({
                     endDate: schedule.endDate,
                 }}
             />
+            <ConvertToTeamModal
+                isOpen={isConvertModalOpen}
+                onClose={() => setIsConvertModalOpen(false)}
+                onSubmit={async (teamName: string) => await handleConvertToTeam(teamName)}
+            />
+            {schedule.team && (
+                <InviteTeamMemberModal
+                    isOpen={isInviteModalOpen}
+                    onClose={() => setIsInviteModalOpen(false)}
+                    onSubmit={async (userId: string) => await handleInviteTeamMember(userId)}
+                    teamId={schedule.team.id}
+                />
+            )}
             <Link
                 href={`main/schedules/${schedule.id}`}
                 key={`${schedule.title}-${schedule.startDate}`}
@@ -101,10 +167,47 @@ const ScheduleListItem = ({
                                     <span className="text-sm text-green-600 font-semibold">{schedule.endDate}</span>
                                 </div>
                             )}
+                            {schedule.team && (
+                                <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-50 rounded-full">
+                                    <Users className="w-4 h-4 text-purple-600" />
+                                    <span className="text-sm font-medium text-purple-700">팀</span>
+                                    <span className="text-sm text-purple-600 font-semibold">{schedule.team.name}</span>
+                                </div>
+                            )}
                         </div>
                     </div>
 
                     <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                        {!schedule.team && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setIsConvertModalOpen(true);
+                                }}
+                                className="hover:bg-purple-100 hover:text-purple-600 rounded-full p-2"
+                                title="팀으로 전환"
+                            >
+                                <Users className="h-4 w-4" />
+                            </Button>
+                        )}
+                        {schedule.team && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    setIsInviteModalOpen(true);
+                                }}
+                                className="hover:bg-green-100 hover:text-green-600 rounded-full p-2"
+                                title="팀 멤버 초대"
+                            >
+                                <UserPlus className="h-4 w-4" />
+                            </Button>
+                        )}
                         <Button
                             variant="ghost"
                             size="sm"

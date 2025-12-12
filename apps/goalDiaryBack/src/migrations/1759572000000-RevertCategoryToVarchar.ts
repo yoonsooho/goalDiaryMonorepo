@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class RevertCategoryToVarchar1759572000000
-  implements MigrationInterface
-{
+export class RevertCategoryToVarchar1759572000000 implements MigrationInterface {
   name = 'RevertCategoryToVarchar1759572000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

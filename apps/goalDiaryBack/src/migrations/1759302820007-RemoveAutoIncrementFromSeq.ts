@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class RemoveAutoIncrementFromSeq1759302820007
-  implements MigrationInterface
-{
+export class RemoveAutoIncrementFromSeq1759302820007 implements MigrationInterface {
   name = 'RemoveAutoIncrementFromSeq1759302820007';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

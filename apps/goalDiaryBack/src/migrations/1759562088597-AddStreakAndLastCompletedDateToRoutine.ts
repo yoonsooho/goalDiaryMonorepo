@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddStreakAndLastCompletedDateToRoutine1759562088597
-  implements MigrationInterface
-{
+export class AddStreakAndLastCompletedDateToRoutine1759562088597 implements MigrationInterface {
   name = 'AddStreakAndLastCompletedDateToRoutine1759562088597';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

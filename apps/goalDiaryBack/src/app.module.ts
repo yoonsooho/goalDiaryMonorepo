@@ -13,6 +13,8 @@ import { ScheduleUserModule } from './schedule-user/schedule-user.module';
 import { RoutineModule } from './routine/routine.module';
 import { DiaryModule } from './diary/diary.module';
 import typeorm from 'src/config/typeorm';
+import { TeamModule } from './team/team.module';
+import { NotificationModule } from './notification/notification.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import typeorm from 'src/config/typeorm';
     ScheduleUserModule,
     RoutineModule,
     DiaryModule,
+    TeamModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Post } from './post.entity';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Schedule } from 'src/schedule/schedule.entity';
 import { CreatePostInputClass } from './dto/create-post.dto';
+import { ScheduleGateway } from 'src/schedule/schedule.gateway';
 
 @Injectable()
 export class PostService {
@@ -13,6 +19,8 @@ export class PostService {
     private readonly postRepository: Repository<Post>,
     @InjectRepository(Schedule)
     private readonly scheduleRepository: Repository<Schedule>,
+    @Inject(forwardRef(() => ScheduleGateway))
+    private readonly scheduleGateway: ScheduleGateway,
   ) {}
 
   async create(createPostDto: CreatePostInputClass): Promise<Post> {
@@ -46,7 +54,15 @@ export class PostService {
       schedule: schedule,
     });
 
-    return this.postRepository.save(post);
+    const saved = await this.postRepository.save(post);
+
+    // WebSocket 브로드캐스트
+    this.scheduleGateway.emitScheduleUpdated(createPostDto.schedule_id, {
+      type: 'posts.updated',
+      scheduleId: createPostDto.schedule_id,
+    });
+
+    return saved;
   }
 
   async findAll(): Promise<Post[]> {
@@ -107,12 +123,27 @@ export class PostService {
       post.title = updatePostDto.title;
     }
 
-    return this.postRepository.save(post);
+    const saved = await this.postRepository.save(post);
+
+    // WebSocket 브로드캐스트
+    this.scheduleGateway.emitScheduleUpdated(scheduleId, {
+      type: 'posts.updated',
+      scheduleId,
+    });
+
+    return saved;
   }
 
   async remove(id: string): Promise<void> {
     const post = await this.findOne(id);
+    const scheduleId = post.schedule.id;
     await this.postRepository.remove(post);
+
+    // WebSocket 브로드캐스트
+    this.scheduleGateway.emitScheduleUpdated(scheduleId, {
+      type: 'posts.updated',
+      scheduleId,
+    });
   }
 
   // 순서 변경 메서드 (드래그 앤 드롭용)
@@ -136,6 +167,12 @@ export class PostService {
           );
         }
       }
+    });
+
+    // WebSocket 브로드캐스트
+    this.scheduleGateway.emitScheduleUpdated(scheduleId, {
+      type: 'posts.updated',
+      scheduleId,
     });
   }
 

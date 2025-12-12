@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsNumber } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateScheduleDto {
   @IsString()
@@ -11,5 +12,10 @@ export class CreateScheduleDto {
 
   @IsOptional()
   endDate?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Type(() => Number)
+  teamId?: number; // 팀 일정으로 생성할 경우 팀 ID
 }
 export type CreateScheduleInput = CreateScheduleDto & { usersId: string };

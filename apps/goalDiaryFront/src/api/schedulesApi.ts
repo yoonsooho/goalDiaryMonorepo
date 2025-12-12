@@ -30,3 +30,11 @@ export const updateSchedules = async (data: PostSchedulesType & { id: string }) 
         requireAuth: true, // 일정 수정은 인증이 필요
     });
 };
+
+export const convertScheduleToTeam = async (scheduleId: string, teamName: string) => {
+    return await commonApiJson(`/api/schedules/${scheduleId}/convert-to-team`, {
+        method: "PATCH",
+        body: { teamName },
+        requireAuth: true,
+    });
+};

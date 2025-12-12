@@ -165,13 +165,14 @@ export function SortableItem({
                         className="p-1 mt-0.5 hover:bg-gray-100 rounded transition-colors shrink-0 opacity-50 hover:opacity-100"
                         onClick={(e) => {
                             e.preventDefault();
-                            let contentUpdateForm = {
-                                text: editValue,
-                                startTime: editStartTime ? editStartTime : undefined,
-                                endTime: editEndTime ? editEndTime : undefined,
-                                isCompleted: isChecked,
-                            };
-                            handleSubmit(contentUpdateForm);
+                            e.stopPropagation();
+                            if (isEditMode) {
+                                // 편집 모드일 때 다시 누르면 편집 모드만 종료 (저장 안 함)
+                                setIsEditMode(false);
+                            } else {
+                                // 편집 모드가 아닐 때 누르면 편집 모드 시작
+                                setIsEditMode(true);
+                            }
                         }}
                     >
                         <Image src={editIcon} alt="editIcon" width={18} height={18} />
@@ -223,8 +224,43 @@ export function SortableItem({
                                 </h2>
                             )}
                         </form>
-                        {/* 시간 표시 영역 */}
-                        {!isEditMode && (startTime || endTime) ? (
+                        {/* 시간 입력/표시 영역 */}
+                        {isEditMode ? (
+                            // 편집 모드일 때: 시간 입력 영역 + 저장 버튼 표시
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                                <input
+                                    type="time"
+                                    value={editStartTime}
+                                    onChange={(e) => setEditStartTime(e.target.value)}
+                                    className="text-sm px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-28"
+                                />
+                                <span className="text-gray-400 text-sm">~</span>
+                                <input
+                                    type="time"
+                                    value={editEndTime}
+                                    onChange={(e) => setEditEndTime(e.target.value)}
+                                    className="text-sm px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white w-28"
+                                />
+                                <button
+                                    type="button"
+                                    className="text-xs text-blue-600 font-medium hover:underline px-2 py-1 bg-blue-50 hover:bg-blue-100 rounded transition-colors"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        let contentUpdateForm = {
+                                            text: editValue,
+                                            startTime: editStartTime ? editStartTime : undefined,
+                                            endTime: editEndTime ? editEndTime : undefined,
+                                            isCompleted: isChecked,
+                                        };
+                                        handleSubmit(contentUpdateForm);
+                                    }}
+                                >
+                                    저장
+                                </button>
+                            </div>
+                        ) : startTime || endTime ? (
+                            // 편집 모드가 아니고 시간이 있을 때: 시간 표시
                             <div
                                 className={`flex items-center gap-1.5 mt-1.5 text-sm transition-colors duration-300 ${isChecked ? "text-gray-300" : "text-gray-500"}`}
                             >
@@ -234,9 +270,8 @@ export function SortableItem({
                                 <span>{endTime || "..."}</span>
                             </div>
                         ) : (
-                            /* 시간 입력 영역 (입력값이 없거나, 편집 모드가 아닐 때도 값을 입력할 수 있도록 하던 기존 로직 유지) */
-                            !isEditMode &&
-                            !isChecked && ( // 완료 상태가 아닐 때만 시간 입력창 노출
+                            // 편집 모드가 아니고 시간이 없을 때: 시간 입력 영역 (완료 상태가 아닐 때만)
+                            !isChecked && (
                                 <div className="flex items-center gap-2 mt-2 flex-wrap">
                                     <input
                                         type="time"
@@ -254,7 +289,6 @@ export function SortableItem({
                                     <button
                                         className="text-xs text-blue-600 font-medium hover:underline px-2"
                                         onClick={() => {
-                                            setIsEditMode(true);
                                             let contentUpdateForm = {
                                                 text: editValue,
                                                 startTime: editStartTime ? editStartTime : undefined,

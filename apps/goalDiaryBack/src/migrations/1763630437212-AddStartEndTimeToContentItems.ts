@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class AddStartEndTimeToContentItems1763630437212
-  implements MigrationInterface
-{
+export class AddStartEndTimeToContentItems1763630437212 implements MigrationInterface {
   name = 'AddStartEndTimeToContentItems1763630437212';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

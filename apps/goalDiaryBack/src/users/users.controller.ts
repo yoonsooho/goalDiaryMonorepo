@@ -7,6 +7,7 @@ import {
   Req,
   Res,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AccessTokenGuard } from 'src/common/guards/access-token.guard';
@@ -63,6 +64,17 @@ export class UsersController {
     return {
       message: '회원 탈퇴 성공',
     };
+  }
+
+  // 사용자 검색 (팀 초대용)
+  @UseGuards(AccessTokenGuard)
+  @Get('search')
+  async searchUsers(@Query('q') query: string) {
+    if (!query) {
+      return [];
+    }
+    const users = await this.usersService.searchUsers(query);
+    return users.map((user) => this.shieldUserInformation(user));
   }
 
   private shieldUserInformation(user: User) {

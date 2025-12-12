@@ -1,3 +1,5 @@
+import { contentItem } from "@/type/boards";
+
 export type contentItems = {
     text: string;
     id: number;
@@ -8,12 +10,7 @@ export type postContentItemsType = {
     text: string;
     post_id: number;
 };
-export type patchContentItemsType = {
-    text: string;
-    startTime?: string;
-    endTime?: string;
-    isCompleted?: boolean;
-};
+export type patchContentItemsType = Partial<Omit<contentItem, "id">>;
 
 export type moveContentItems = {
     contentItemId: number;

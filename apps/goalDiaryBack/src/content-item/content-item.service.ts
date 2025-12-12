@@ -1,10 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  Inject,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ContentItem } from './content-item.entity';
 import { CreateContentItemDto } from './dto/create-content-item.dto';
 import { UpdateContentItemTextDto } from './dto/update-content-item.dto';
 import { Post } from 'src/post/post.entity';
+import { ScheduleGateway } from 'src/schedule/schedule.gateway';
 
 @Injectable()
 export class ContentItemService {
@@ -13,6 +19,8 @@ export class ContentItemService {
     private readonly contentItemRepository: Repository<ContentItem>,
     @InjectRepository(Post)
     private readonly postRepository: Repository<Post>,
+    @Inject(forwardRef(() => ScheduleGateway))
+    private readonly scheduleGateway: ScheduleGateway,
   ) {}
 
   async create(
@@ -45,7 +53,21 @@ export class ContentItemService {
       post: post,
     });
 
-    return this.contentItemRepository.save(contentItem);
+    const saved = await this.contentItemRepository.save(contentItem);
+
+    // Post를 통해 scheduleId 찾아서 WebSocket 브로드캐스트
+    const postWithSchedule = await this.postRepository.findOne({
+      where: { id: createContentItemDto.post_id },
+      relations: ['schedule'],
+    });
+    if (postWithSchedule?.schedule?.id) {
+      this.scheduleGateway.emitScheduleUpdated(postWithSchedule.schedule.id, {
+        type: 'contentItems.updated',
+        scheduleId: postWithSchedule.schedule.id,
+      });
+    }
+
+    return saved;
   }
 
   async findAll(): Promise<ContentItem[]> {
@@ -92,12 +114,39 @@ export class ContentItemService {
       contentItem.isCompleted = updateContentItemTextDto.isCompleted;
     }
 
-    return this.contentItemRepository.save(contentItem);
+    const saved = await this.contentItemRepository.save(contentItem);
+
+    // Post를 통해 scheduleId 찾아서 WebSocket 브로드캐스트
+    const post = await this.postRepository.findOne({
+      where: { id: contentItem.post.id },
+      relations: ['schedule'],
+    });
+    if (post?.schedule?.id) {
+      this.scheduleGateway.emitScheduleUpdated(post.schedule.id, {
+        type: 'contentItems.updated',
+        scheduleId: post.schedule.id,
+      });
+    }
+
+    return saved;
   }
 
   async remove(id: number): Promise<void> {
     const contentItem = await this.findOne(id);
+    const postId = contentItem.post.id;
     await this.contentItemRepository.remove(contentItem);
+
+    // Post를 통해 scheduleId 찾아서 WebSocket 브로드캐스트
+    const post = await this.postRepository.findOne({
+      where: { id: postId },
+      relations: ['schedule'],
+    });
+    if (post?.schedule?.id) {
+      this.scheduleGateway.emitScheduleUpdated(post.schedule.id, {
+        type: 'contentItems.updated',
+        scheduleId: post.schedule.id,
+      });
+    }
   }
 
   // 순서 변경 메서드 (드래그 앤 드롭용)
@@ -110,6 +159,18 @@ export class ContentItemService {
         await manager.update(ContentItem, update.id, { seq: update.seq });
       }
     });
+
+    // Post를 통해 scheduleId 찾아서 WebSocket 브로드캐스트
+    const post = await this.postRepository.findOne({
+      where: { id: postId },
+      relations: ['schedule'],
+    });
+    if (post?.schedule?.id) {
+      this.scheduleGateway.emitScheduleUpdated(post.schedule.id, {
+        type: 'contentItems.updated',
+        scheduleId: post.schedule.id,
+      });
+    }
   }
 
   // 특정 post의 content-items를 seq 순서로 조회
@@ -174,5 +235,17 @@ export class ContentItemService {
         await manager.update(ContentItem, update.id, { seq: update.seq });
       }
     });
+
+    // Post를 통해 scheduleId 찾아서 WebSocket 브로드캐스트
+    const toPost = await this.postRepository.findOne({
+      where: { id: moveData.toPostId },
+      relations: ['schedule'],
+    });
+    if (toPost?.schedule?.id) {
+      this.scheduleGateway.emitScheduleUpdated(toPost.schedule.id, {
+        type: 'contentItems.updated',
+        scheduleId: toPost.schedule.id,
+      });
+    }
   }
 }

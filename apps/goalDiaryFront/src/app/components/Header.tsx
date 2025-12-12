@@ -7,15 +7,23 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { DropdownMenuDialog } from "@/components/dropDownMenu";
 import { useConfirmModal } from "@/components/ui/confirm-modal";
+import { Bell, Users } from "lucide-react";
+import { useGetUnreadNotificationCount } from "@/app/hooks/apiHook/useNotifications";
+import MyTeamsModal from "@/app/components/main/modal/MyTeamsModal";
+import NotificationsModal from "@/app/components/main/modal/NotificationsModal";
 
 export default function Header() {
     const [mounted, setMounted] = useState(false);
+    const [isMyTeamsModalOpen, setIsMyTeamsModalOpen] = useState(false);
+    const [isNotificationsModalOpen, setIsNotificationsModalOpen] = useState(false);
     const router = useRouter();
     const pathname = usePathname();
     const { data: user, isLoading, error } = useGetUser();
     const signOutMutation = useSignOut();
     const userDeleteMutation = useUserDelete();
     const { openConfirm, ConfirmModal } = useConfirmModal();
+    const { data: unreadCountData } = useGetUnreadNotificationCount();
+    const unreadNotificationCount = unreadCountData?.count || 0;
 
     const handleUserDelete = () => {
         userDeleteMutation.mutate(undefined, {
@@ -81,6 +89,8 @@ export default function Header() {
     return (
         <header className="bg-white shadow-sm border-b border-gray-200">
             <ConfirmModal />
+            <MyTeamsModal isOpen={isMyTeamsModalOpen} onClose={() => setIsMyTeamsModalOpen(false)} />
+            <NotificationsModal isOpen={isNotificationsModalOpen} onClose={() => setIsNotificationsModalOpen(false)} />
             <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center h-16">
                     <div className="flex items-center space-x-24">
@@ -112,6 +122,28 @@ export default function Header() {
                     </div>
                     {mounted && !isLoading && user && user.username && (
                         <div className="flex items-center space-x-4">
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setIsNotificationsModalOpen(true)}
+                                className="relative"
+                                title="알림"
+                            >
+                                <Bell className="w-5 h-5" />
+                                {unreadNotificationCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 rounded-full border-2 border-white flex items-center justify-center text-xs text-white font-medium px-1">
+                                        {unreadNotificationCount > 9 ? "9+" : unreadNotificationCount}
+                                    </span>
+                                )}
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setIsMyTeamsModalOpen(true)}
+                                title="내가 속한 팀"
+                            >
+                                <Users className="w-5 h-5" />
+                            </Button>
                             <div className="flex items-center space-x-3">
                                 <div className="flex flex-col text-right">
                                     <DropdownMenuDialog

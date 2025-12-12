@@ -51,8 +51,12 @@ describe('PostController (e2e)', () => {
     app = moduleFixture.createNestApplication();
     await app.init();
 
-    postRepository = moduleFixture.get<Repository<Post>>(getRepositoryToken(Post));
-    scheduleRepository = moduleFixture.get<Repository<Schedule>>(getRepositoryToken(Schedule));
+    postRepository = moduleFixture.get<Repository<Post>>(
+      getRepositoryToken(Post),
+    );
+    scheduleRepository = moduleFixture.get<Repository<Schedule>>(
+      getRepositoryToken(Schedule),
+    );
   });
 
   afterEach(async () => {
@@ -132,9 +136,7 @@ describe('PostController (e2e)', () => {
     it('should return 404 if post not found', async () => {
       mockPostRepository.findOne.mockResolvedValue(null);
 
-      await request(app.getHttpServer())
-        .get('/posts/999')
-        .expect(404);
+      await request(app.getHttpServer()).get('/posts/999').expect(404);
     });
   });
 
@@ -160,9 +162,7 @@ describe('PostController (e2e)', () => {
       mockPostRepository.findOne.mockResolvedValue(mockPost);
       mockPostRepository.remove.mockResolvedValue(mockPost);
 
-      await request(app.getHttpServer())
-        .delete('/posts/1')
-        .expect(200);
+      await request(app.getHttpServer()).delete('/posts/1').expect(200);
     });
   });
 });

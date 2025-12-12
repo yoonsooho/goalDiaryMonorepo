@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CleanupDuplicateStartTimeEndTime1763543380980
-  implements MigrationInterface
-{
+export class CleanupDuplicateStartTimeEndTime1763543380980 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // 컬럼이 이미 존재하는지 확인하고, 없을 때만 추가
     const table = await queryRunner.getTable('posts');

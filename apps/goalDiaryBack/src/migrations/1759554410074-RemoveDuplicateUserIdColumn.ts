@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class RemoveDuplicateUserIdColumn1759554410074
-  implements MigrationInterface
-{
+export class RemoveDuplicateUserIdColumn1759554410074 implements MigrationInterface {
   name = 'RemoveDuplicateUserIdColumn1759554410074';
 
   public async up(queryRunner: QueryRunner): Promise<void> {

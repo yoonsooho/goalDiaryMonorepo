@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { ButtonLoading } from "@/components/ui/loading";
 import { PostSchedulesType } from "@/type/ScheduleType";
+import { useGetMyTeams } from "@/app/hooks/apiHook/useTeams";
 
 interface CreateScheduleModalProps {
     isOpen: boolean;
@@ -24,12 +25,17 @@ interface CreateScheduleModalProps {
 
 export default function CreateScheduleModal({ isOpen, onClose, onSubmit }: CreateScheduleModalProps) {
     const [isLoading, setIsLoading] = useState(false);
+    const { data: myTeams } = useGetMyTeams();
     const {
         register,
         handleSubmit,
         reset,
+        watch,
+        setValue,
         formState: { errors },
     } = useForm<PostSchedulesType>();
+
+    const selectedTeamId = watch("teamId");
 
     const handleFormSubmit = async (data: PostSchedulesType) => {
         try {
@@ -88,6 +94,29 @@ export default function CreateScheduleModal({ isOpen, onClose, onSubmit }: Creat
                         <Label htmlFor="endDate">종료 날짜</Label>
                         <Input id="endDate" type="date" {...register("endDate")} disabled={isLoading} />
                     </div>
+
+                    {myTeams && myTeams.length > 0 && (
+                        <div className="space-y-2">
+                            <Label htmlFor="teamId">팀 선택 (선택사항)</Label>
+                            <select
+                                id="teamId"
+                                {...register("teamId")}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                                disabled={isLoading}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    setValue("teamId", value ? Number(value) : undefined);
+                                }}
+                            >
+                                <option value="">개인 일정</option>
+                                {myTeams.map((teamUser) => (
+                                    <option key={teamUser.team.id} value={teamUser.team.id}>
+                                        {teamUser.team.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
                     <DialogFooter>
                         <Button type="button" variant="outline" onClick={handleClose} disabled={isLoading}>

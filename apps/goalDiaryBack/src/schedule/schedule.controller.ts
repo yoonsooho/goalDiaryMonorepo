@@ -13,6 +13,7 @@ import {
 import { ScheduleService } from './schedule.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
+import { ConvertToTeamDto } from './dto/convert-to-team.dto';
 import { AccessTokenGuard } from 'src/common/guards/access-token.guard';
 import { Request } from 'express';
 
@@ -58,5 +59,19 @@ export class ScheduleController {
   ) {
     const usersId = req.user['sub']; // or req.user.id
     return this.scheduleService.deleteByScheduleId(scheduleId, usersId);
+  }
+
+  @Patch(':scheduleId/convert-to-team')
+  async convertToTeam(
+    @Param('scheduleId', ParseIntPipe) scheduleId: number,
+    @Body() convertToTeamDto: ConvertToTeamDto,
+    @Req() req: Request,
+  ) {
+    const usersId = req.user['sub'];
+    return this.scheduleService.convertToTeam(
+      scheduleId,
+      usersId,
+      convertToTeamDto.teamName,
+    );
   }
 }

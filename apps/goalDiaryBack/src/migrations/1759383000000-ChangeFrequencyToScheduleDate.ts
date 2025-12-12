@@ -1,8 +1,6 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class ChangeFrequencyToScheduleDate1759383000000
-  implements MigrationInterface
-{
+export class ChangeFrequencyToScheduleDate1759383000000 implements MigrationInterface {
   name = 'ChangeFrequencyToScheduleDate1759383000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
