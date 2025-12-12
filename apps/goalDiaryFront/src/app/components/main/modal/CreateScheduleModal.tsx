@@ -16,7 +16,7 @@ import {
 import { ButtonLoading } from "@/components/ui/loading";
 import { PostSchedulesType } from "@/type/ScheduleType";
 import { useGetMyTeams } from "@/app/hooks/apiHook/useTeams";
-
+import { TeamType } from "@/type/teams";
 interface CreateScheduleModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -54,6 +54,7 @@ export default function CreateScheduleModal({ isOpen, onClose, onSubmit }: Creat
         reset(); // 폼 초기화
         onClose();
     };
+    console.log("myTeams", myTeams);
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -109,7 +110,7 @@ export default function CreateScheduleModal({ isOpen, onClose, onSubmit }: Creat
                                 }}
                             >
                                 <option value="">개인 일정</option>
-                                {myTeams.map((teamUser) => (
+                                {myTeams.map((teamUser: TeamType) => (
                                     <option key={teamUser.team.id} value={teamUser.team.id}>
                                         {teamUser.team.name}
                                     </option>

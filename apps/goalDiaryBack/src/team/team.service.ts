@@ -193,6 +193,24 @@ export class TeamService {
     return this.teamUsers.find({
       where: { user: { id: userId }, status: 'ACTIVE' },
       relations: ['team', 'team.owner'],
+      select: {
+        id: true,
+        status: true,
+        role: true,
+        createdAt: true,
+        team: {
+          id: true,
+          name: true,
+          createdAt: true,
+          updatedAt: true,
+          owner: {
+            id: true,
+            userId: true, // 로그인 아이디
+            username: true, // 사용자 이름
+            // password, refreshToken, socialId, social 등 민감한 정보는 제외
+          },
+        },
+      },
     });
   }
 
