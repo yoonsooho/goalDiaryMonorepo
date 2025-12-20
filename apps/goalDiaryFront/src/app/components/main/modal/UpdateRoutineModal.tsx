@@ -16,6 +16,8 @@ import {
 import { ButtonLoading } from "@/components/ui/loading";
 import { RoutineType, CreateRoutineDto } from "@/type/RoutineType";
 
+import { Textarea } from "@/components/common/textarea";
+
 interface UpdateRoutineModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -80,7 +82,7 @@ export default function UpdateRoutineModal({ isOpen, onClose, onSubmit, routine 
                 <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="title">제목 *</Label>
-                        <Input
+                        <Textarea
                             id="title"
                             {...register("title", {
                                 required: "제목을 입력해주세요",
@@ -91,6 +93,7 @@ export default function UpdateRoutineModal({ isOpen, onClose, onSubmit, routine 
                             })}
                             placeholder="루틴 제목을 입력하세요"
                             disabled={isLoading}
+                            rows={3}
                         />
                         {errors.title && <p className="text-sm text-red-500">{errors.title.message}</p>}
                     </div>
