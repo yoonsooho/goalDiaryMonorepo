@@ -148,12 +148,17 @@ export function Board({
                 }}
                 className="flex items-center gap-2 mt-4 p-2 bg-white rounded-lg shadow-sm"
             >
-                <input
-                    type="text"
+                <textarea
                     value={addValue}
                     onChange={(e) => setAddValue(e.target.value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            handleAdd(e as unknown as React.FormEvent<HTMLFormElement>);
+                        }
+                    }}
                     placeholder="할일 추가"
-                    className="flex-1 pl-3 py-2 text-sm border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md"
+                    className="flex-1 pl-3 py-2 text-sm border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md resize-none"
                 />
                 <button
                     type="submit"
