@@ -34,6 +34,10 @@ export class UsersService {
     return this.userRepository.findOne({ where: { userId } });
   }
 
+  async findBySocialId(socialId: string, social: string): Promise<User> {
+    return this.userRepository.findOne({ where: { socialId, social } });
+  }
+
   async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
     await this.userRepository.update(id, updateUserDto);
     return this.findById(id);

@@ -15,9 +15,48 @@ import { AccessTokenGuard } from 'src/common/guards/access-token.guard';
 import { RefreshTokenGuard } from 'src/common/guards/refresh-token.guard';
 import { Request } from 'express';
 
+import { GoogleAuthGuard } from './guards/google-auth.guard';
+
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
+
+  @Get('google')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuth(@Req() req, @Res({ passthrough: true }) res: Response) {
+    return res.redirect(process.env.FRONTEND_URL || 'http://localhost:3000');
+  }
+
+  @Get('google/callback')
+  @UseGuards(GoogleAuthGuard)
+  async googleAuthRedirect(
+    @Req() req,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const tokens = await this.authService.googleLogin(req);
+    const isProduction = process.env.NODE_ENV === 'production';
+
+    // Cross-origin 배포 환경을 위한 쿠키 설정
+    const accessCookieOptions = {
+      maxAge: 1000 * 60 * 15, // 15분
+      secure: isProduction, // HTTPS에서만
+      sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax', // Cross-origin 허용
+      path: '/',
+    };
+
+    const refreshCookieOptions = {
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7일
+      secure: isProduction,
+      sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+      httpOnly: true, // XSS 방지
+      path: '/',
+    };
+
+    res.cookie('access_token', tokens.accessToken, accessCookieOptions);
+    res.cookie('refresh_token', tokens.refreshToken, refreshCookieOptions);
+
+    res.redirect(process.env.FRONTEND_URL || 'http://localhost:3000');
+  }
 
   @Post('signup')
   signUp(@Body() signUpDto: SignUpDto) {

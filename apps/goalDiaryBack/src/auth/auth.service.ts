@@ -45,11 +45,51 @@ export class AuthService {
     return tokens;
   }
 
+  async googleLogin(req): Promise<any> {
+    if (!req.user) {
+      throw new BadRequestException('Google Authentication failed');
+    }
+
+    const { email, username, socialId, social } = req.user;
+
+    let user = await this.usersService.findBySocialId(socialId, social);
+
+    if (!user) {
+      // 이메일로 이미 존재하는 유저인지 확인
+      const userByEmail = await this.usersService.findByUserId(email);
+      if (userByEmail) {
+        // 이미 존재하는 유저라면 소셜 정보를 업데이트
+        await this.usersService.update(userByEmail.id, { socialId, social });
+        user = userByEmail;
+      } else {
+        // 새로운 유저 생성
+        user = await this.usersService.create({
+          userId: email,
+          username: username,
+          socialId,
+          social,
+          password: null,
+        });
+      }
+    }
+
+    const tokens = await this.getTokens(user);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+    return tokens;
+  }
+
   // signIn
   async signIn(data: SignInDto): Promise<any> {
     const user = await this.usersService.findByUserId(data.userId);
     if (!user) {
       throw new BadRequestException('사용자를 찾을 수 없습니다.');
+    }
+
+    if (!user.password) {
+      throw new BadRequestException(
+        '비밀번호가 설정되지 않은 계정입니다. 소셜 로그인을 이용해주세요.',
+      );
     }
 
     const isPasswordMatched = await argon2.verify(user.password, data.password);
