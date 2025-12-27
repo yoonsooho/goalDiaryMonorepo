@@ -152,6 +152,7 @@ export function Board({
                     value={addValue}
                     onChange={(e) => setAddValue(e.target.value)}
                     onKeyDown={(e) => {
+                        if (e.nativeEvent.isComposing) return; // 한글 조합 중이면 무시
                         if (e.key === "Enter" && !e.shiftKey) {
                             e.preventDefault();
                             handleAdd(e as unknown as React.FormEvent<HTMLFormElement>);
