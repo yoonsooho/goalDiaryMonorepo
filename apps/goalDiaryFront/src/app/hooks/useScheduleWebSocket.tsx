@@ -10,14 +10,16 @@ import { getAccessTokenFromCookie } from "@/lib/utils";
  * scheduleId로 room에 join하고, schedule.updated 이벤트를 수신하여 React Query 캐시를 갱신합니다.
  *
  * @param scheduleId - 연결할 스케줄 ID (null이면 연결하지 않음)
+ * @param options - 연결 옵션 (enabled: false면 연결하지 않음)
  * @returns Socket 인스턴스 (현재는 사용하지 않지만, 필요시 수동으로 이벤트 emit 등에 사용 가능)
  */
-export const useScheduleWebSocket = (scheduleId: number | null) => {
+export const useScheduleWebSocket = (scheduleId: number | null, options: { enabled: boolean }) => {
+    const { enabled } = options;
     const queryClient = useQueryClient();
     const socketRef = useRef<Socket | null>(null);
 
     useEffect(() => {
-        if (!scheduleId) return;
+        if (!scheduleId || !enabled) return;
 
         const token = getAccessTokenFromCookie();
         if (!token) {
@@ -106,7 +108,7 @@ export const useScheduleWebSocket = (scheduleId: number | null) => {
             socket.disconnect();
             socketRef.current = null;
         };
-    }, [scheduleId, queryClient]);
+    }, [scheduleId, queryClient, enabled]);
 
     // Socket 인스턴스를 반환 (현재는 사용하지 않지만, 필요시 수동으로 이벤트 emit 등에 사용 가능)
     // 예: const socket = useScheduleWebSocket(scheduleId); socket?.emit('customEvent', data);

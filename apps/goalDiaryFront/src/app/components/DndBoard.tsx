@@ -28,9 +28,14 @@ import BigCalendar, { CalendarEvent } from "@/components/calendar/BigCalendar";
 import dayjs from "dayjs";
 import { useScheduleWebSocket } from "@/app/hooks/useScheduleWebSocket";
 
+import { useSearchParams } from "next/navigation";
+
 export default function DndBoard({ scheduleId }: { scheduleId: number }) {
     // WebSocket 연결 (팀 일정인 경우 실시간 동기화)
-    useScheduleWebSocket(scheduleId);
+    const searchParams = useSearchParams();
+    const isTeam = searchParams.get("isTeam") === "true";
+
+    useScheduleWebSocket(scheduleId, { enabled: isTeam });
     const { data: boardsData } = useGetPosts(scheduleId);
     // 하이드레이션된 데이터를 초기값으로 사용 (첫 렌더링부터 데이터가 있도록)
     const [boards, setBoards] = useState<boards>(() => boardsData || []);

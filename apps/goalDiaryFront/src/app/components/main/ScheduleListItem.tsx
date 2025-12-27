@@ -145,7 +145,7 @@ const ScheduleListItem = ({
                 />
             )}
             <Link
-                href={`main/schedules/${schedule.id}`}
+                href={`main/schedules/${schedule.id}?isTeam=${!!schedule.team}`}
                 key={`${schedule.title}-${schedule.startDate}`}
                 className="block group"
             >
