@@ -15,6 +15,7 @@ import { DiaryModule } from './diary/diary.module';
 import typeorm from 'src/config/typeorm';
 import { TeamModule } from './team/team.module';
 import { NotificationModule } from './notification/notification.module';
+import { QuoteModule } from './quote/quote.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { NotificationModule } from './notification/notification.module';
     DiaryModule,
     TeamModule,
     NotificationModule,
+    QuoteModule,
   ],
   controllers: [AppController],
   providers: [AppService],

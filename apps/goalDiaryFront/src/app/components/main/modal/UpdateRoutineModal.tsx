@@ -16,7 +16,7 @@ import {
 import { ButtonLoading } from "@/components/ui/loading";
 import { RoutineType, CreateRoutineDto } from "@/type/RoutineType";
 
-import { Textarea } from "@/components/common/textarea";
+import { Textarea } from "@/components/common/Textarea";
 
 interface UpdateRoutineModalProps {
     isOpen: boolean;

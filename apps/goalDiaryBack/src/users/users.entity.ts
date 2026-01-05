@@ -3,6 +3,7 @@ import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { Routine } from 'src/routine/routine.entity';
 import { Diary } from 'src/diary/entities/diary.entity';
 import { TeamUser } from 'src/team/entities/team-user.entity';
+import { Quote } from 'src/quote/quote.entity';
 
 @Entity({
   name: 'users',
@@ -58,4 +59,7 @@ export class User {
 
   @OneToMany(() => TeamUser, (teamUser) => teamUser.user)
   teamUsers: TeamUser[];
+
+  @OneToMany(() => Quote, (quote) => quote.user)
+  quotes: Quote[];
 }

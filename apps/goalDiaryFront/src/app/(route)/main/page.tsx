@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import ScheduleList from "@/app/components/main/ScheduleList";
 import RoutineList from "@/app/components/main/RoutineList";
 import RoutineProgressBar from "@/app/components/main/RoutineProgressBar";
+import QuoteSection from "@/app/components/main/QuoteSection";
 
 const Main = () => {
     const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
@@ -77,6 +78,9 @@ const Main = () => {
         <div className="min-h-screen bg-gray-50">
             <main className="py-6">
                 <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
+                    {/* 명언 섹션 */}
+                    <QuoteSection />
+
                     {/* 액션 버튼들 */}
                     <div className="mb-6 flex gap-3">
                         <Button onClick={() => setIsScheduleModalOpen(true)} className="flex items-center gap-2">
