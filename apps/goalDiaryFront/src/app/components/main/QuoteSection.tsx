@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Plus, Trash2, Edit2, Link as LinkIcon, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TextArea } from "@/components/common/Textarea";
+import TextArea from "@/components/common/TextArea";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
