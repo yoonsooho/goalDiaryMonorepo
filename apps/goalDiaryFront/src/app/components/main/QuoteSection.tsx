@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Plus, Trash2, Edit2, Link as LinkIcon, Save, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/common/Textarea";
+import { TextArea } from "@/components/common/Textarea";
 import Link from "next/link";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -142,7 +142,7 @@ function QuoteCard({
     if (isEditing) {
         return (
             <div className="h-40 p-4 border border-blue-200 rounded-xl bg-white shadow-lg flex flex-col gap-2 relative">
-                <Textarea
+                <TextArea
                     placeholder="명언을 입력하세요"
                     value={form.content}
                     onChange={(e) => setForm({ ...form, content: e.target.value })}

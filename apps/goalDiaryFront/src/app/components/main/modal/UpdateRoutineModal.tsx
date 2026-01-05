@@ -16,7 +16,7 @@ import {
 import { ButtonLoading } from "@/components/ui/loading";
 import { RoutineType, CreateRoutineDto } from "@/type/RoutineType";
 
-import { Textarea } from "@/components/common/Textarea";
+import { TextArea } from "@/components/common/Textarea";
 
 interface UpdateRoutineModalProps {
     isOpen: boolean;
@@ -82,7 +82,7 @@ export default function UpdateRoutineModal({ isOpen, onClose, onSubmit, routine 
                 <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="title">제목 *</Label>
-                        <Textarea
+                        <TextArea
                             id="title"
                             {...register("title", {
                                 required: "제목을 입력해주세요",
