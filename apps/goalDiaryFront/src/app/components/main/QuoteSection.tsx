@@ -186,7 +186,7 @@ function QuoteCard({
     return (
         <div className="h-40 p-5 border border-gray-200 rounded-xl bg-white hover:shadow-md transition-shadow relative group flex flex-col justify-between">
             <div>
-                <p className="text-gray-800 font-medium text-sm line-clamp-3 leading-relaxed">
+                <p className="text-gray-800 font-medium text-sm line-clamp-3 leading-relaxed whitespace-pre-wrap">
                     &ldquo;{quote!.content}&rdquo;
                 </p>
             </div>
