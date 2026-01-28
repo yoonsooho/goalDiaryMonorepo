@@ -1,10 +1,9 @@
 /**
- * SortableItem 컴포넌트
+ * TaskCard 컴포넌트
  *
- * 각 보드 내의 개별 할 일 카드 컴포넌트입니다.
+ * BoardColumn 내의 개별 할 일 카드 컴포넌트입니다.
  *
  * 주요 기능:
- * - 드래그 앤 드롭으로 순서 변경 가능 (dnd-kit 사용)
  * - 할 일 텍스트 편집 (편집 모드 토글)
  * - 시간 설정 (시작 시간 + 지속 시간 입력)
  * - 완료 상태 토글 (체크박스)
@@ -23,21 +22,17 @@
 "use client";
 import deleteIcon from "@/assets/deleteIcon.png";
 import editIcon from "@/assets/editIcon.png";
-import moveIcon from "@/assets/moveIcon.png";
 import { patchContentItemsType } from "@/type/contentItems";
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import dayjs from "dayjs";
 import { useToast } from "@/hooks/use-toast";
 
-interface SortableItemProps {
+interface TaskCardProps {
     id: number;
     name: string;
     startTime?: string | null;
     endTime?: string | null;
-    isDragOverlay?: boolean;
     // [추가] 완료 상태 props (나중에 서버 데이터와 연결)
     isCompleted?: boolean;
     bigRank?: number | null;
@@ -46,20 +41,28 @@ interface SortableItemProps {
     anotherContentTimeLists?: (
         excludeContentId: number
     ) => { id: number; startTime: string | null; endTime: string | null }[];
+    isSwapMode?: boolean;
+    isSelectedForSwap?: boolean;
+    onSwapTimeClick?: (itemId: number) => void;
 }
 
-export function SortableItem({
+const BIG_RANKS = [1, 2, 3] as const;
+const DURATION_PRESETS = [15, 30, 60] as const;
+
+export function TaskCard({
     id,
     name,
     startTime = null,
     endTime = null,
-    isDragOverlay,
     isCompleted = false, // 기본값 false
     bigRank = null,
     handleDeleteItem,
     handleEditItem,
     anotherContentTimeLists,
-}: SortableItemProps) {
+    isSwapMode = false,
+    isSelectedForSwap = false,
+    onSwapTimeClick,
+}: TaskCardProps) {
     const { toast } = useToast();
     const [isEditMode, setIsEditMode] = useState(false);
     const [editValue, setEditValue] = useState(name);
@@ -133,18 +136,6 @@ export function SortableItem({
         setIsEditMode(false);
     };
 
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-        id,
-        disabled: isDragOverlay,
-    });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition: isDragOverlay ? undefined : "transform 300ms cubic-bezier(0.25, 1, 0.5, 1)",
-        opacity: isDragging ? 0.3 : 1,
-        scale: isDragOverlay ? 1.05 : 1,
-    };
-
     useEffect(() => {
         if (isEditMode) {
             editRef.current?.focus();
@@ -199,33 +190,16 @@ export function SortableItem({
     }, [isEditMode, editStartTime, editDurationMinutes, anotherContentTimeLists, id]);
 
     // 다른 카드들이 이미 사용 중인 시간대 정보 (현재 카드 제외)
+    // 생성/수정 시 프론트에서 겹침을 막고 있기 때문에, 여기서는 단순히 정렬된 리스트만 유지해도 충분함
     const otherTimeRanges = useMemo(() => {
         if (!anotherContentTimeLists) return [];
         const others = anotherContentTimeLists(id).filter((item) => item.startTime && item.endTime);
-        const mapped = others.map((item) => ({
-            start: dayjs(`2000-01-01 ${item.startTime!}`),
-            end: dayjs(`2000-01-01 ${item.endTime!}`),
-        }));
-        // 시작 시간 기준 정렬
-        mapped.sort((a, b) => a.start.valueOf() - b.start.valueOf());
-        // 단순 병합 (겹치는 구간은 하나로)
-        const merged: { start: dayjs.Dayjs; end: dayjs.Dayjs }[] = [];
-        for (const range of mapped) {
-            if (!merged.length) {
-                merged.push(range);
-                continue;
-            }
-            const last = merged[merged.length - 1];
-            if (range.start.isBefore(last.end) && range.end.isAfter(last.start)) {
-                // 겹치면 끝 시간을 확장
-                if (range.end.isAfter(last.end)) {
-                    last.end = range.end;
-                }
-            } else {
-                merged.push(range);
-            }
-        }
-        return merged;
+        return others
+            .map((item) => ({
+                start: dayjs(`2000-01-01 ${item.startTime!}`),
+                end: dayjs(`2000-01-01 ${item.endTime!}`),
+            }))
+            .sort((a, b) => a.start.valueOf() - b.start.valueOf());
     }, [anotherContentTimeLists, id]);
 
     // 타임라인 바(00:00~24:00)를 위한 구간 정보 계산
@@ -273,15 +247,22 @@ export function SortableItem({
         return start.add(editDurationMinutes, "minute").format("HH:mm");
     }, [editStartTime, editDurationMinutes]);
 
+    // 교환 모드일 때 시간이 있는 아이템만 클릭 가능
+    const canSwap = isSwapMode && startTime && endTime;
+
     return (
         <div
-            ref={setNodeRef}
-            style={style}
+            onClick={(e) => {
+                if (canSwap && onSwapTimeClick) {
+                    e.stopPropagation();
+                    onSwapTimeClick(id);
+                }
+            }}
             className={`
                 p-4 mb-2 rounded shadow transition-all duration-300  
-                ${isDragging ? "border-2 border-blue-500 z-50" : ""}
-                ${isDragOverlay ? "shadow-lg cursor-grabbing" : ""}
-                ${isChecked ? "bg-gray-50" : "bg-white"} 
+                ${isChecked ? "bg-gray-50" : "bg-white"}
+                ${canSwap ? "cursor-pointer hover:ring-2 hover:ring-blue-400" : ""}
+                ${isSelectedForSwap ? "ring-2 ring-blue-500 bg-blue-50" : ""}
             `}
         >
             <div className="flex items-start gap-3">
@@ -318,17 +299,8 @@ export function SortableItem({
                     )}
                 </button>
 
-                {/* 드래그 핸들 & 수정 버튼 & 내용 */}
+                {/* 수정 버튼 & 내용 */}
                 <div className="flex items-start gap-2 flex-1 min-w-0">
-                    <span
-                        {...attributes}
-                        {...listeners}
-                        className="cursor-grab active:cursor-grabbing shrink-0 mt-1 opacity-50 hover:opacity-100 transition-opacity"
-                        suppressHydrationWarning
-                    >
-                        <Image src={moveIcon} alt="moveIcon" width={20} height={20} />
-                    </span>
-
                     <button
                         className="p-1 mt-0.5 hover:bg-gray-100 rounded transition-colors shrink-0 opacity-50 hover:opacity-100"
                         onClick={(e) => {
@@ -391,7 +363,7 @@ export function SortableItem({
 
                                 {/* BIG1 / BIG2 / BIG3 토글 버튼 */}
                                 <div className="flex items-center gap-1 shrink-0">
-                                    {[1, 2, 3].map((rank) => {
+                                    {BIG_RANKS.map((rank) => {
                                         const active = currentBigRank === rank;
                                         const label = `BIG${rank}`;
                                         return (
@@ -473,19 +445,19 @@ export function SortableItem({
                                     />
                                     <span className="text-gray-400 text-xs">분</span>
                                     <div className="flex gap-1">
-                                        {[15, 30, 60].map((p) => (
+                                        {DURATION_PRESETS.map((presetMinutes) => (
                                             <button
-                                                key={p}
+                                                key={presetMinutes}
                                                 type="button"
                                                 className="px-2 py-0.5 text-[11px] rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     setEditDurationMinutes((prev) =>
-                                                        Math.min(24 * 60, (prev || 0) + p)
+                                                        Math.min(24 * 60, (prev || 0) + presetMinutes)
                                                     );
                                                 }}
                                             >
-                                                +{p}
+                                                +{presetMinutes}
                                             </button>
                                         ))}
                                     </div>
@@ -526,6 +498,16 @@ export function SortableItem({
                                 <span>{startTime || "..."}</span>
                                 <span>~</span>
                                 <span>{endTime || "..."}</span>
+                                {isSwapMode && (
+                                    <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+                                        교환 가능
+                                    </span>
+                                )}
+                                {isSelectedForSwap && (
+                                    <span className="ml-2 px-2 py-0.5 bg-blue-600 text-white text-xs font-bold rounded">
+                                        선택됨
+                                    </span>
+                                )}
                             </div>
                         ) : (
                             // 편집 모드가 아니고 시간이 없을 때: 시간 입력 영역 (완료 상태가 아닐 때만)

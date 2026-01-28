@@ -1,14 +1,11 @@
 "use client";
-import { SortableItem } from "@/app/components/SortableItem";
+import { TaskCard } from "./TaskCard";
 import addIcon from "@/assets/addIcon.png";
 import deleteIcon from "@/assets/deleteIcon.png";
 import editIcon from "@/assets/editIcon.png";
-import moveIcon from "@/assets/moveIcon.png";
 import { useConfirmModal } from "@/components/ui/confirm-modal";
 import { boards } from "@/type/boards";
 import { patchContentItemsType } from "@/type/contentItems";
-import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import Image from "next/image";
 import React, { useState } from "react";
 interface BoardProps {
@@ -23,7 +20,6 @@ interface BoardProps {
         bigRank?: number | null;
     }[];
     title: string;
-    isDragOverlay?: boolean;
     handleEditBoard?: (boardId: number, newName: string) => void;
     handleDeleteBoard?: (boardId: number) => void;
     handleEditItem?: (itemId: number, data: patchContentItemsType) => void;
@@ -32,24 +28,30 @@ interface BoardProps {
     anotherContentTimeLists?: (
         excludeContentId: number
     ) => { id: number; startTime: string | null; endTime: string | null }[];
+    isSwapMode?: boolean;
+    firstSwapItemId?: number | null;
+    onSwapTimeClick?: (itemId: number) => void;
 }
 
-export function Board({
+export function BoardColumn({
     id,
     title,
     items,
-    isDragOverlay,
     handleEditBoard,
     handleDeleteBoard,
     handleEditItem,
     handleDeleteItem,
     handleAddItem,
     anotherContentTimeLists,
+    isSwapMode = false,
+    firstSwapItemId = null,
+    onSwapTimeClick,
 }: BoardProps) {
     const [isEditMode, setIsEditMode] = useState(false);
     const [editValue, setEditValue] = useState(title);
     const [addValue, setAddValue] = useState("");
     const { openConfirm, ConfirmModal } = useConfirmModal();
+
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (editValue.trim() && editValue !== title) {
@@ -57,6 +59,7 @@ export function Board({
         }
         setIsEditMode(false);
     };
+
     const handleAdd = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (addValue.trim() && title) {
@@ -65,33 +68,26 @@ export function Board({
         }
     };
 
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-        id,
-        data: {
-            type: "board",
-        },
-    });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition: isDragOverlay ? "none" : transition,
-    };
+    // 시간/seq 기준으로 정렬된 아이템 목록
+    const orderedItems = [
+        // 먼저 시간 있는 아이템들: startTime 오름차순, 같으면 seq(또는 id) 순
+        ...items
+            .filter((item) => item.startTime && item.endTime)
+            .sort((a, b) => {
+                if (a.startTime && b.startTime && a.startTime !== b.startTime) {
+                    return a.startTime.localeCompare(b.startTime);
+                }
+                return (a.seq ?? a.id) - (b.seq ?? b.id);
+            }),
+        // 그 다음 시간 없는 아이템들: seq(또는 id) 순
+        ...items.filter((item) => !item.startTime || !item.endTime).sort((a, b) => (a.seq ?? a.id) - (b.seq ?? b.id)),
+    ];
 
     return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            className={`w-full p-4 bg-gray-100 rounded-lg relative h-full
-                ${isDragging ? "opacity-50" : ""}
-                ${isDragOverlay ? "shadow-lg" : ""}
-            `}
-        >
+        <div className="w-full p-4 bg-gray-100 rounded-lg relative h-full">
             <ConfirmModal />
             <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2">
-                    <button {...attributes} {...listeners} className="cursor-move shrink-0" suppressHydrationWarning>
-                        <Image src={moveIcon} alt="moveIcon" width={20} height={20} />
-                    </button>
                     <button
                         className="p-2 hover:rounded-full hover:bg-gray-200 shrink-0"
                         onClick={(e) => {
@@ -131,38 +127,25 @@ export function Board({
                     {/* <Image src={deleteIcon} alt="deleteIcon" width={20} height={20} /> */}
                 </button>
             </div>
-            <div className="h-96 overflow-y-auto">
+            <div className="h-96 overflow-y-auto px-1 py-1">
                 {/* 시간이 설정된 아이템을 startTime 기준으로 정렬 */}
-                <SortableContext items={items.map((item) => item.id)} strategy={verticalListSortingStrategy}>
-                    {[
-                        // 먼저 시간 있는 아이템들: startTime 오름차순, 같으면 seq(또는 id) 순
-                        ...items
-                            .filter((item) => item.startTime && item.endTime)
-                            .sort((a, b) => {
-                                if (a.startTime && b.startTime && a.startTime !== b.startTime) {
-                                    return a.startTime.localeCompare(b.startTime);
-                                }
-                                return (a.seq ?? a.id) - (b.seq ?? b.id);
-                            }),
-                        // 그 다음 시간 없는 아이템들: seq(또는 id) 순
-                        ...items
-                            .filter((item) => !item.startTime || !item.endTime)
-                            .sort((a, b) => (a.seq ?? a.id) - (b.seq ?? b.id)),
-                    ].map((item) => (
-                        <SortableItem
-                            key={item.id}
-                            id={Number(item.id)}
-                            name={item.text}
-                            startTime={item.startTime || null}
-                            endTime={item.endTime || null}
-                            isCompleted={item.isCompleted || false}
-                            bigRank={item?.bigRank ?? null}
-                            handleDeleteItem={handleDeleteItem}
-                            handleEditItem={handleEditItem}
-                            anotherContentTimeLists={anotherContentTimeLists}
-                        />
-                    ))}
-                </SortableContext>
+                {orderedItems.map((item) => (
+                    <TaskCard
+                        key={item.id}
+                        id={Number(item.id)}
+                        name={item.text}
+                        startTime={item.startTime || null}
+                        endTime={item.endTime || null}
+                        isCompleted={item.isCompleted || false}
+                        bigRank={item?.bigRank ?? null}
+                        handleDeleteItem={handleDeleteItem}
+                        handleEditItem={handleEditItem}
+                        anotherContentTimeLists={anotherContentTimeLists}
+                        isSwapMode={isSwapMode}
+                        isSelectedForSwap={firstSwapItemId === item.id}
+                        onSwapTimeClick={onSwapTimeClick}
+                    />
+                ))}
             </div>
             <form
                 onSubmit={(e) => {

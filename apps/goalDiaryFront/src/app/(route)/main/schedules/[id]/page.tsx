@@ -1,5 +1,5 @@
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
-import DndBoard from "@/app/components/DndBoard";
+import ScheduleDetail from "@/app/components/schedule-detail/ScheduleDetail";
 import { getPostsServer } from "@/api/serverApi";
 import { serverQueryClientConfig } from "@/lib/query-config";
 
@@ -21,7 +21,7 @@ export default async function SchedulePage({ params }: { params: Promise<{ id: s
 
     return (
         <HydrationBoundary state={dehydratedState}>
-            <DndBoard scheduleId={scheduleId} />
+            <ScheduleDetail scheduleId={scheduleId} />
         </HydrationBoundary>
     );
 }
