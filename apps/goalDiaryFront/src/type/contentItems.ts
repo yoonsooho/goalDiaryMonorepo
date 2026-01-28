@@ -18,3 +18,8 @@ export type moveContentItems = {
     toPostId: string;
     toPostContentItems: Omit<contentItems, "text">[];
 };
+
+export type swapContentItemTimes = {
+    firstContentItemId: number;
+    secondContentItemId: number;
+};

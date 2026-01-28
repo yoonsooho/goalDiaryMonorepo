@@ -5,8 +5,8 @@ import { QuoteController } from './quote.controller';
 import { Quote } from './quote.entity';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([Quote])],
-    controllers: [QuoteController],
-    providers: [QuoteService],
+  imports: [TypeOrmModule.forFeature([Quote])],
+  controllers: [QuoteController],
+  providers: [QuoteService],
 })
 export class QuoteModule {}

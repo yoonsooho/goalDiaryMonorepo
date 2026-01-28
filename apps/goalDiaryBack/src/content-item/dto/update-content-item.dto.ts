@@ -8,8 +8,11 @@ import {
   ValidateNested,
   Matches,
   IsBoolean,
+  Max,
+  Min,
+  ValidateIf,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Type, Transform } from 'class-transformer';
 
 export class UpdateContentItemDto extends PartialType(CreateContentItemDto) {
   @IsOptional()
@@ -53,4 +56,21 @@ export class UpdateContentItemTextDto {
   @IsOptional()
   @IsBoolean()
   isCompleted?: boolean;
+
+  // BIG1, BIG2, BIG3 용 랭크 정보 (1,2,3). null이면 랭크 해제
+  @IsOptional()
+  @Transform(({ value }) => (value === null ? null : Number(value)))
+  @ValidateIf((o) => o.bigRank !== null)
+  @IsNumber({}, { message: 'bigRank는 숫자여야 합니다.' })
+  @Min(1, { message: 'bigRank는 1 이상이어야 합니다.' })
+  @Max(3, { message: 'bigRank는 3 이하여야 합니다.' })
+  bigRank?: number | null;
+}
+
+export class SwapContentItemTimesDto {
+  @IsNumber()
+  firstContentItemId: number;
+
+  @IsNumber()
+  secondContentItemId: number;
 }

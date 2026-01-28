@@ -13,6 +13,7 @@ import {
 import { ContentItemService } from './content-item.service';
 import { CreateContentItemDto } from './dto/create-content-item.dto';
 import {
+  SwapContentItemTimesDto,
   UpdateContentItemSequenceDto,
   UpdateContentItemTextDto,
 } from './dto/update-content-item.dto';
@@ -44,6 +45,28 @@ export class ContentItemController {
     return this.contentItemService.findOne(id);
   }
 
+  // 두 ContentItem의 시간대(startTime, endTime)를 서로 교환
+  // 동적 라우트(:contentItemId)보다 위에 배치해야 "swap-times"가 제대로 매칭됨
+  @Patch('swap-times')
+  async swapTimes(
+    @Body() dto: SwapContentItemTimesDto,
+  ): Promise<{ message: string }> {
+    return this.contentItemService.swapContentItemTimes(dto);
+  }
+
+  // 순서 변경 API (드래그 앤 드롭)
+  @Patch(':postId/seq')
+  async updateSequence(
+    @Param('postId') postId: string,
+    @Body() updateSequenceDto: UpdateContentItemSequenceDto,
+  ): Promise<{ message: string }> {
+    await this.contentItemService.updateSequence(
+      postId,
+      updateSequenceDto.contentItemSeqUpdates,
+    );
+    return { message: 'Content items 순서가 업데이트되었습니다.' };
+  }
+
   @Patch(':contentItemId')
   async update(
     @Param('contentItemId', ParseIntPipe) contentItemId: number,
@@ -58,19 +81,6 @@ export class ContentItemController {
   @Delete(':id')
   async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
     return this.contentItemService.remove(id);
-  }
-
-  // 순서 변경 API (드래그 앤 드롭)
-  @Patch(':postId/seq')
-  async updateSequence(
-    @Param('postId') postId: string,
-    @Body() updateSequenceDto: UpdateContentItemSequenceDto,
-  ): Promise<{ message: string }> {
-    await this.contentItemService.updateSequence(
-      postId,
-      updateSequenceDto.contentItemSeqUpdates,
-    );
-    return { message: 'Content items 순서가 업데이트되었습니다.' };
   }
 
   // ContentItem을 다른 Post로 이동

@@ -8,7 +8,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ContentItem } from './content-item.entity';
 import { CreateContentItemDto } from './dto/create-content-item.dto';
-import { UpdateContentItemTextDto } from './dto/update-content-item.dto';
+import {
+  SwapContentItemTimesDto,
+  UpdateContentItemTextDto,
+} from './dto/update-content-item.dto';
 import { Post } from 'src/post/post.entity';
 import { ScheduleGateway } from 'src/schedule/schedule.gateway';
 
@@ -112,6 +115,10 @@ export class ContentItemService {
     }
     if (updateContentItemTextDto.isCompleted !== undefined) {
       contentItem.isCompleted = updateContentItemTextDto.isCompleted;
+    }
+
+    if (updateContentItemTextDto.bigRank !== undefined) {
+      contentItem.bigRank = updateContentItemTextDto.bigRank;
     }
 
     const saved = await this.contentItemRepository.save(contentItem);
@@ -247,5 +254,82 @@ export class ContentItemService {
         scheduleId: toPost.schedule.id,
       });
     }
+  }
+
+  // 두 ContentItem의 시간대(startTime, endTime)를 서로 교환
+  async swapContentItemTimes(
+    dto: SwapContentItemTimesDto,
+  ): Promise<{ message: string }> {
+    const { firstContentItemId, secondContentItemId } = dto;
+
+    if (firstContentItemId === secondContentItemId) {
+      throw new NotFoundException(
+        '서로 다른 두 개의 아이템을 선택해야 합니다.',
+      );
+    }
+
+    await this.contentItemRepository.manager.transaction(async (manager) => {
+      const first = await manager.findOne(ContentItem, {
+        where: { id: firstContentItemId },
+        relations: ['post'],
+      });
+      const second = await manager.findOne(ContentItem, {
+        where: { id: secondContentItemId },
+        relations: ['post'],
+      });
+
+      if (!first) {
+        throw new NotFoundException(
+          `ContentItem with ID ${firstContentItemId} not found`,
+        );
+      }
+      if (!second) {
+        throw new NotFoundException(
+          `ContentItem with ID ${secondContentItemId} not found`,
+        );
+      }
+
+      const firstStart = first.startTime ?? null;
+      const firstEnd = first.endTime ?? null;
+      const secondStart = second.startTime ?? null;
+      const secondEnd = second.endTime ?? null;
+
+      await manager.update(ContentItem, firstContentItemId, {
+        startTime: secondStart,
+        endTime: secondEnd,
+      });
+      await manager.update(ContentItem, secondContentItemId, {
+        startTime: firstStart,
+        endTime: firstEnd,
+      });
+    });
+
+    // 두 아이템이 속한 schedule에 실시간 이벤트 전송
+    const affectedScheduleIds = new Set<number>();
+
+    const firstWithPost = await this.contentItemRepository.findOne({
+      where: { id: firstContentItemId },
+      relations: ['post', 'post.schedule'],
+    });
+    if (firstWithPost?.post?.schedule?.id) {
+      affectedScheduleIds.add(firstWithPost.post.schedule.id);
+    }
+
+    const secondWithPost = await this.contentItemRepository.findOne({
+      where: { id: secondContentItemId },
+      relations: ['post', 'post.schedule'],
+    });
+    if (secondWithPost?.post?.schedule?.id) {
+      affectedScheduleIds.add(secondWithPost.post.schedule.id);
+    }
+
+    affectedScheduleIds.forEach((scheduleId) => {
+      this.scheduleGateway.emitScheduleUpdated(scheduleId, {
+        type: 'contentItems.updated',
+        scheduleId,
+      });
+    });
+
+    return { message: '두 일정의 시간이 서로 교환되었습니다.' };
   }
 }

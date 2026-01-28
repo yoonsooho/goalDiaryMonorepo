@@ -1,6 +1,12 @@
 import { useMutation } from "@tanstack/react-query";
-import { deleteContentItems, patchContentItems, postContentItems, updateMoveContentItems } from "@/api/contentItem";
-import { moveContentItems, patchContentItemsType, postContentItemsType } from "@/type/contentItems";
+import {
+    deleteContentItems,
+    patchContentItems,
+    postContentItems,
+    updateMoveContentItems,
+    swapContentItemsTimes,
+} from "@/api/contentItem";
+import { moveContentItems, patchContentItemsType, postContentItemsType, swapContentItemTimes } from "@/type/contentItems";
 
 // export const useGetContentItems = (postId: number) => {
 //     return useQuery({
@@ -31,6 +37,15 @@ export const useUpdateMoveContentItems = () => {
         mutationKey: ["contentItems"],
         mutationFn: (data: moveContentItems) => {
             return updateMoveContentItems(data);
+        },
+    });
+};
+
+export const useSwapContentItemTimes = () => {
+    return useMutation({
+        mutationKey: ["contentItems"],
+        mutationFn: (data: swapContentItemTimes) => {
+            return swapContentItemsTimes(data);
         },
     });
 };

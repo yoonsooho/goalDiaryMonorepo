@@ -85,7 +85,7 @@ export class ScheduleService {
         });
         await manager.save(ScheduleUser, scheduleUser);
 
-        // 5. 기본 Post 2개 생성
+        // 5. 기본 Post 생성 (초기 보드 1개만 생성)
         const timestamp = Date.now();
         const post1 = manager.create(Post, {
           id: `post-${timestamp}-1`,
@@ -94,17 +94,7 @@ export class ScheduleService {
           schedule: savedSchedule,
         });
 
-        const post2 = manager.create(Post, {
-          id: `post-${timestamp + 1}-2`,
-          title: 'BIG3일정',
-          seq: 2,
-          schedule: savedSchedule,
-        });
-
-        await Promise.all([
-          manager.save(Post, post1),
-          manager.save(Post, post2),
-        ]);
+        await manager.save(Post, post1);
 
         // 브로드캐스트 (생성 이벤트)
         this.scheduleGateway.emitScheduleUpdated(savedSchedule.id, {

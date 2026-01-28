@@ -1,3 +1,19 @@
+/**
+ * DndBoard 컴포넌트
+ *
+ * 일정 상세 페이지의 메인 레이아웃 컴포넌트입니다.
+ *
+ * 주요 기능:
+ * - 좌측: 할 일 보드 영역 (여러 보드와 각 보드의 할 일 카드들을 드래그 앤 드롭으로 관리)
+ * - 우측: 오늘 스케줄 타임라인 (시간 정보가 있는 카드들을 시간순으로 정렬하여 표시)
+ *
+ * 기능:
+ * - 보드/카드 드래그 앤 드롭으로 순서 변경
+ * - 오늘 스케줄에서 완료 상태 토글
+ * - WebSocket을 통한 팀 일정 실시간 동기화 (팀 일정인 경우)
+ * - BIG1/BIG2/BIG3 랭크 표시
+ */
+
 "use client";
 
 import useBoardHandler from "@/app/hooks/useBoardHandler";
@@ -16,17 +32,16 @@ import {
     useSensors,
 } from "@dnd-kit/core";
 import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
-import { useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 
 import { Board } from "./Board";
 import { useGetPosts } from "@/app/hooks/apiHook/usePost";
-import { PageLoading } from "@/components/ui/loading";
-
-import { useMutationState } from "@tanstack/react-query";
+import { useMutationState, useQueryClient } from "@tanstack/react-query";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
-import BigCalendar, { CalendarEvent } from "@/components/calendar/BigCalendar";
 import dayjs from "dayjs";
 import { useScheduleWebSocket } from "@/app/hooks/useScheduleWebSocket";
+import { usePatchContentItems } from "@/app/hooks/apiHook/useContentItem";
+import { useToast } from "@/hooks/use-toast";
 
 import { useSearchParams } from "next/navigation";
 
@@ -43,6 +58,9 @@ export default function DndBoard({ scheduleId }: { scheduleId: number }) {
 
     const [firstActiveBoardId, setFirstActiveBoardId] = useState<number | null>(null);
     const helper = helpers(boards);
+    const { mutate: patchContentItems } = usePatchContentItems();
+    const queryClient = useQueryClient();
+    const { toast } = useToast();
     const { handleDragStart, handleDragEnd, handleDragOver } = useDndHandlers(
         boards,
         setBoards,
@@ -87,12 +105,102 @@ export default function DndBoard({ scheduleId }: { scheduleId: number }) {
                     endTime: item.endTime,
                 }));
         },
-        [boards]
+        []
     );
 
+    // 오늘 스케줄(시간 정보 있는 카드) 정리
+    const timeLineEvents = useMemo(() => {
+        const today = dayjs().format("YYYY-MM-DD");
+        return boards
+            .flatMap((board) =>
+                board.contentItems
+                    .filter((item) => item.startTime && item.endTime)
+                    .map((item) => ({
+                        id: item.id,
+                        title: item.text,
+                        start: dayjs(`${today} ${item.startTime}`),
+                        end: dayjs(`${today} ${item.endTime}`),
+                        isCompleted: item.isCompleted ?? false,
+                        bigRank: item.bigRank ?? null,
+                    }))
+            )
+            .sort((a, b) => a.start.valueOf() - b.start.valueOf());
+    }, [boards]);
+
+    const handleToggleTimelineItem = (event: {
+        id: number;
+        title: string;
+        start: dayjs.Dayjs;
+        end: dayjs.Dayjs;
+        isCompleted: boolean;
+        bigRank: number | null;
+    }) => {
+        const newCompleted = !event.isCompleted;
+
+        // 1) 로컬 boards 상태를 먼저 낙관적으로 업데이트해서 즉시 UI 반영
+        setBoards((prev) =>
+            prev.map((board) => ({
+                ...board,
+                contentItems: board.contentItems.map((item) =>
+                    item.id === event.id ? { ...item, isCompleted: newCompleted } : item
+                ),
+            }))
+        );
+
+        // 해당 아이템의 현재 bigRank 찾기
+        const currentItem = boards.flatMap((board) => board.contentItems).find((item) => item.id === event.id);
+
+        patchContentItems(
+            {
+                contentItemId: event.id,
+                data: {
+                    text: event.title,
+                    startTime: event.start.format("HH:mm"),
+                    endTime: event.end.format("HH:mm"),
+                    isCompleted: newCompleted,
+                    bigRank: currentItem?.bigRank ?? undefined,
+                },
+            },
+            {
+                onSuccess: () => {
+                    // 이 스케줄의 posts 쿼리만 정확히 무효화해서 보드/스케줄 UI를 즉시 동기화
+                    queryClient.invalidateQueries({ queryKey: ["posts", scheduleId] });
+                },
+                onError: () => {
+                    // 실패 시 로컬 상태를 원래대로 롤백
+                    setBoards((prev) =>
+                        prev.map((board) => ({
+                            ...board,
+                            contentItems: board.contentItems.map((item) =>
+                                item.id === event.id ? { ...item, isCompleted: event.isCompleted } : item
+                            ),
+                        }))
+                    );
+                    toast({
+                        title: "완료 상태 변경 실패",
+                        description: "스케줄 완료 상태를 변경하는 중 오류가 발생했습니다.",
+                        variant: "destructive",
+                    });
+                },
+            }
+        );
+    };
+
     return (
-        <div className="p-8 box-border flex flex-row gap-4" suppressHydrationWarning>
+        <div className="min-h-screen bg-slate-50 px-6 py-6" suppressHydrationWarning>
             <LoadingOverlay open={isMutating} text="업데이트 중입니다..." />
+
+            {/* 상단 헤더 영역 */}
+            <header className="mb-6">
+                <div>
+                    <h1 className="text-2xl font-semibold text-slate-900">일정 상세</h1>
+                    <p className="mt-1 text-sm text-slate-500">
+                        이 일정에 대한 할 일 보드와 오늘 스케줄을 한 화면에서 확인하세요.
+                    </p>
+                </div>
+            </header>
+
+            {/* 메인 레이아웃: 데스크톱에서는 좌우 2컬럼, 모바일에서는 위아래 */}
             <DndContext
                 sensors={sensors}
                 collisionDetection={closestCorners}
@@ -109,91 +217,137 @@ export default function DndBoard({ scheduleId }: { scheduleId: number }) {
                     setFirstActiveBoardId(null);
                 }}
             >
-                <SortableContext items={boards.map((board) => board.id)}>
-                    <div className="flex flex-col gap-4 flex-[0.4]">
-                        {boards?.map((board) => (
-                            <Board
-                                key={board.id}
-                                id={board.id}
-                                title={board.title}
-                                items={board.contentItems}
-                                handleEditBoard={handleEditBoard}
-                                handleDeleteBoard={handleDeleteBoard}
-                                handleEditItem={handleEditItem}
-                                handleDeleteItem={handleDeleteItem}
-                                handleAddItem={handleAddItem}
-                                anotherContentTimeLists={anotherContentTimeLists(boards)}
-                            />
-                        ))}
-                        {/* 보드 추가 기능 추가 추후 재사용할 수도 있음 */}
-                        {/* <div className="w-96 p-4 bg-gray-100 rounded-lg min-h-[200px] relative flex flex-col">
-                            <h2 className="mb-6 text-lg font-bold text-gray-700">Add board</h2>
-                            <form
-                                onSubmit={(e) => {
-                                    e.preventDefault();
-                                    if (!newBoard.trim()) return; // 빈 문자열 체크
-                                    handleAddBoard(newBoard);
-                                    setNewBoard("");
-                                }}
-                                className="flex flex-col gap-2"
-                            >
-                                <input
-                                    type="text"
-                                    value={newBoard}
-                                    onChange={(e) => setNewBoard(e.target.value)}
-                                    placeholder="보드 이름을 적어주세요."
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={!newBoard.trim()}
-                                    className="w-full px-4 py-2 text-white transition-colors bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Add board
-                                </button>
-                            </form>
-                        </div> */}
-                    </div>
-                </SortableContext>
-                <div className="h-full mt-2 flex-[0.6]">
-                    <BigCalendar
-                        events={boards.flatMap((board) =>
-                            board.contentItems.reduce<CalendarEvent[]>(
-                                (
-                                    acc: CalendarEvent[],
-                                    cur: {
-                                        id: number;
-                                        text: string;
-                                        startTime: string | null;
-                                        endTime: string | null;
-                                    }
-                                ) => {
-                                    if (cur?.startTime && cur?.endTime) {
-                                        let startTime = new Date(
-                                            dayjs(`${dayjs().format("YYYY-MM-DD")} ${cur.startTime}`).format(
-                                                "YYYY-MM-DD HH:mm"
-                                            )
-                                        );
-                                        let endTime = new Date(
-                                            dayjs(`${dayjs().format("YYYY-MM-DD")} ${cur.endTime}`).format(
-                                                "YYYY-MM-DD HH:mm"
-                                            )
-                                        );
-                                        acc.push({
-                                            id: cur.id,
-                                            title: cur.text,
-                                            startTime: startTime,
-                                            endTime: endTime,
-                                        });
-                                    }
-                                    return acc;
-                                },
-                                []
-                            )
-                        )}
-                        defaultDate={new Date()}
-                    />
+                <div className="grid gap-6 lg:grid-cols-[minmax(0,0.6fr)_minmax(0,0.4fr)] items-start">
+                    {/* 왼쪽: 할 일 보드 */}
+                    <section className="space-y-4">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h2 className="text-lg font-semibold text-slate-900">할 일 보드</h2>
+                                <span className="text-xs text-slate-500">
+                                    드래그해서 순서를 바꾸고, 카드 안에서 세부 내용을 관리하세요.
+                                </span>
+                            </div>
+                        </div>
+
+                        <SortableContext items={boards.map((board) => board.id)}>
+                            <div className="flex flex-col gap-4">
+                                {boards?.map((board) => (
+                                    <Board
+                                        key={board.id}
+                                        id={board.id}
+                                        title={board.title}
+                                        items={board.contentItems}
+                                        handleEditBoard={handleEditBoard}
+                                        handleDeleteBoard={handleDeleteBoard}
+                                        handleEditItem={handleEditItem}
+                                        handleDeleteItem={handleDeleteItem}
+                                        handleAddItem={handleAddItem}
+                                        anotherContentTimeLists={anotherContentTimeLists(boards)}
+                                    />
+                                ))}
+                            </div>
+                        </SortableContext>
+                    </section>
+
+                    {/* 오른쪽: 오늘 스케줄 타임라인 */}
+                    <section className="space-y-3">
+                        <div className="flex items-center gap-2">
+                            <h2 className="text-lg font-semibold text-sky-800">오늘 스케줄</h2>
+                            <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-medium text-sky-700">
+                                TODAY
+                            </span>
+                        </div>
+                        <p className="text-xs text-sky-700/80">시간대별로 정리된 오늘의 할 일을 한눈에 확인하세요.</p>
+                        <div className="rounded-xl border border-sky-100 bg-sky-50/70 p-3 max-h-[520px] overflow-y-auto space-y-2">
+                            {timeLineEvents.length === 0 ? (
+                                <p className="text-sm text-sky-700/70">등록된 시간 정보가 있는 카드가 없습니다.</p>
+                            ) : (
+                                timeLineEvents.map((event) => {
+                                    const now = dayjs();
+                                    const isCurrent =
+                                        !event.isCompleted && now.isAfter(event.start) && now.isBefore(event.end);
+
+                                    return (
+                                        <div
+                                            key={event.id}
+                                            className={`rounded-lg px-3 py-2 flex flex-col gap-1 border-l-4 shadow-[0_1px_2px_rgba(15,23,42,0.08)] ${
+                                                event.isCompleted
+                                                    ? "bg-slate-50 border-slate-300 opacity-60"
+                                                    : isCurrent
+                                                      ? "bg-sky-100 border-sky-500"
+                                                      : "bg-white border-sky-400"
+                                            }`}
+                                        >
+                                            <div className="flex items-center justify-between gap-2">
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleToggleTimelineItem(event)}
+                                                        className={`shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-all duration-200 ${
+                                                            event.isCompleted
+                                                                ? "bg-green-500 border-green-500"
+                                                                : "border-slate-300 bg-white hover:border-green-400"
+                                                        }`}
+                                                        aria-label={
+                                                            event.isCompleted ? "스케줄 완료 취소" : "스케줄 완료 처리"
+                                                        }
+                                                    >
+                                                        {event.isCompleted && (
+                                                            <svg
+                                                                className="w-2.5 h-2.5 text-white stroke-current stroke-[3]"
+                                                                viewBox="0 0 24 24"
+                                                                fill="none"
+                                                            >
+                                                                <path
+                                                                    d="M5 13l4 4L19 7"
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                />
+                                                            </svg>
+                                                        )}
+                                                    </button>
+                                                    <span
+                                                        className={`text-[11px] font-semibold flex items-center gap-1 ${
+                                                            event.isCompleted ? "text-slate-400" : "text-sky-700"
+                                                        }`}
+                                                    >
+                                                        {event.start.format("HH:mm")} - {event.end.format("HH:mm")}
+                                                        {event.bigRank && (
+                                                            <span
+                                                                className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+                                                                    event.bigRank === 1
+                                                                        ? "bg-red-500 text-white"
+                                                                        : event.bigRank === 2
+                                                                          ? "bg-orange-500 text-white"
+                                                                          : "bg-yellow-400 text-white"
+                                                                }`}
+                                                            >
+                                                                BIG{event.bigRank}
+                                                            </span>
+                                                        )}
+                                                    </span>
+                                                </div>
+                                                {isCurrent && (
+                                                    <span className="rounded-full bg-sky-500/10 px-2 py-0.5 text-[10px] font-semibold text-sky-700">
+                                                        진행 중
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <span
+                                                className={`text-sm font-semibold break-words ${
+                                                    event.isCompleted ? "line-through text-slate-400" : "text-slate-900"
+                                                }`}
+                                            >
+                                                {event.title}
+                                            </span>
+                                        </div>
+                                    );
+                                })
+                            )}
+                        </div>
+                    </section>
                 </div>
+
                 {/* dnd 오버레이(dnd 애니메이션 효과) */}
                 <DragOverlay>
                     {activeId &&

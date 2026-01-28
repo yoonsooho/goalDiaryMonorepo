@@ -13,7 +13,14 @@ import Image from "next/image";
 import React, { useState } from "react";
 interface BoardProps {
     id: number;
-    items: { id: number; text: string; startTime: string | null; endTime: string | null; isCompleted: boolean }[];
+    items: {
+        id: number;
+        text: string;
+        startTime: string | null;
+        endTime: string | null;
+        isCompleted: boolean;
+        seq?: number;
+    }[];
     title: string;
     isDragOverlay?: boolean;
     handleEditBoard?: (boardId: number, newName: string) => void;
@@ -125,8 +132,23 @@ export function Board({
                 </button>
             </div>
             <div className="h-96 overflow-y-auto">
+                {/* 시간이 설정된 아이템을 startTime 기준으로 정렬 */}
                 <SortableContext items={items.map((item) => item.id)} strategy={verticalListSortingStrategy}>
-                    {items.map((item) => (
+                    {[
+                        // 먼저 시간 있는 아이템들: startTime 오름차순, 같으면 seq(또는 id) 순
+                        ...items
+                            .filter((item) => item.startTime && item.endTime)
+                            .sort((a, b) => {
+                                if (a.startTime && b.startTime && a.startTime !== b.startTime) {
+                                    return a.startTime.localeCompare(b.startTime);
+                                }
+                                return (a.seq ?? a.id) - (b.seq ?? b.id);
+                            }),
+                        // 그 다음 시간 없는 아이템들: seq(또는 id) 순
+                        ...items
+                            .filter((item) => !item.startTime || !item.endTime)
+                            .sort((a, b) => (a.seq ?? a.id) - (b.seq ?? b.id)),
+                    ].map((item) => (
                         <SortableItem
                             key={item.id}
                             id={Number(item.id)}
@@ -134,6 +156,7 @@ export function Board({
                             startTime={item.startTime || null}
                             endTime={item.endTime || null}
                             isCompleted={item.isCompleted || false}
+                            bigRank={item.bigRank ?? null}
                             handleDeleteItem={handleDeleteItem}
                             handleEditItem={handleEditItem}
                             anotherContentTimeLists={anotherContentTimeLists}

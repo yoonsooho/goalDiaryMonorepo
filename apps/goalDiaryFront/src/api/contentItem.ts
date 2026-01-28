@@ -1,5 +1,10 @@
 import { commonApi, commonApiJson } from "@/api/commonApi";
-import { postContentItemsType, moveContentItems, patchContentItemsType } from "@/type/contentItems";
+import {
+    postContentItemsType,
+    moveContentItems,
+    patchContentItemsType,
+    swapContentItemTimes,
+} from "@/type/contentItems";
 
 export const getContentItems = async (postId: number) => {
     return await commonApiJson(`/api/content-items?postId=${postId}`, {
@@ -49,5 +54,13 @@ export const updateMoveContentItems = async (data: moveContentItems) => {
         method: "PUT",
         body: data,
         requireAuth: true, // 일정 이동은 인증이 필요
+    });
+};
+
+export const swapContentItemsTimes = async (data: swapContentItemTimes) => {
+    return await commonApiJson(`/api/content-items/swap-times`, {
+        method: "PATCH",
+        body: data,
+        requireAuth: true, // 시간 교환은 인증이 필요
     });
 };

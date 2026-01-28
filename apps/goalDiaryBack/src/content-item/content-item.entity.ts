@@ -57,4 +57,8 @@ export class ContentItem {
 
   @Column({ type: 'boolean', nullable: true, default: false })
   isCompleted?: boolean;
+
+  // BIG1, BIG2, BIG3 표시용 우선순위 (1,2,3). null 이면 일반 일정.
+  @Column({ type: 'int', nullable: true, default: null })
+  bigRank?: number | null;
 }

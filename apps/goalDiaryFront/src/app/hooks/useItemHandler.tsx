@@ -36,9 +36,9 @@ const useItemHandler = (setItems: React.Dispatch<React.SetStateAction<boards>>) 
     };
 
     // 아이템 이름 수정
-    const handleEditItem = (itemId: number, { text, startTime, endTime, isCompleted }: patchContentItemsType) => {
+    const handleEditItem = (itemId: number, { text, startTime, endTime, isCompleted, bigRank }: patchContentItemsType) => {
         if (!text) return;
-        let data: patchContentItemsType = { text, startTime, endTime, isCompleted };
+        let data: patchContentItemsType = { text, startTime, endTime, isCompleted, bigRank };
 
         patchContentItems(
             { contentItemId: itemId, data },
