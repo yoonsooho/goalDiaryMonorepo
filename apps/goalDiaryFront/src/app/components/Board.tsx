@@ -20,6 +20,7 @@ interface BoardProps {
         endTime: string | null;
         isCompleted: boolean;
         seq?: number;
+        bigRank?: number | null;
     }[];
     title: string;
     isDragOverlay?: boolean;
@@ -156,7 +157,7 @@ export function Board({
                             startTime={item.startTime || null}
                             endTime={item.endTime || null}
                             isCompleted={item.isCompleted || false}
-                            bigRank={item.bigRank ?? null}
+                            bigRank={item?.bigRank ?? null}
                             handleDeleteItem={handleDeleteItem}
                             handleEditItem={handleEditItem}
                             anotherContentTimeLists={anotherContentTimeLists}
