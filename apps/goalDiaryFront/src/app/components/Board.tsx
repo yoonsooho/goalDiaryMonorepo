@@ -76,7 +76,6 @@ export function Board({
         transform: CSS.Transform.toString(transform),
         transition: isDragOverlay ? "none" : transition,
     };
-    console.log("items", items);
 
     return (
         <div

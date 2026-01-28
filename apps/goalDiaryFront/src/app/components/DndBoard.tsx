@@ -36,7 +36,7 @@ import { useLayoutEffect, useMemo, useState } from "react";
 
 import { Board } from "./Board";
 import { useGetPosts } from "@/app/hooks/apiHook/usePost";
-import { useMutationState, useQueryClient } from "@tanstack/react-query";
+import { useMutationState, useQuery, useQueryClient } from "@tanstack/react-query";
 import { LoadingOverlay } from "@/components/ui/loading-overlay";
 import dayjs from "dayjs";
 import { useScheduleWebSocket } from "@/app/hooks/useScheduleWebSocket";
@@ -44,6 +44,9 @@ import { usePatchContentItems } from "@/app/hooks/apiHook/useContentItem";
 import { useToast } from "@/hooks/use-toast";
 
 import { useSearchParams } from "next/navigation";
+import { getPosts } from "@/api/postApi";
+import { useGetSchedules } from "@/app/hooks/apiHook/useSchedules";
+import { GetSchedulesType } from "@/type/ScheduleType";
 
 export default function DndBoard({ scheduleId }: { scheduleId: number }) {
     // WebSocket 연결 (팀 일정인 경우 실시간 동기화)
@@ -185,7 +188,10 @@ export default function DndBoard({ scheduleId }: { scheduleId: number }) {
             }
         );
     };
-
+    const { data: schedulesData, isLoading } = useGetSchedules();
+    const title = schedulesData?.find(
+        (schedule: GetSchedulesType) => String(schedule.id) === String(scheduleId)
+    )?.title;
     return (
         <div className="min-h-screen bg-slate-50 px-6 py-6" suppressHydrationWarning>
             <LoadingOverlay open={isMutating} text="업데이트 중입니다..." />
@@ -193,10 +199,7 @@ export default function DndBoard({ scheduleId }: { scheduleId: number }) {
             {/* 상단 헤더 영역 */}
             <header className="mb-6">
                 <div>
-                    <h1 className="text-2xl font-semibold text-slate-900">일정 상세</h1>
-                    <p className="mt-1 text-sm text-slate-500">
-                        이 일정에 대한 할 일 보드와 오늘 스케줄을 한 화면에서 확인하세요.
-                    </p>
+                    <h1 className="text-2xl font-semibold text-slate-900">{title}</h1>
                 </div>
             </header>
 
