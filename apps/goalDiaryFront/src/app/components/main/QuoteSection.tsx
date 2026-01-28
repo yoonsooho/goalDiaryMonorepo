@@ -94,6 +94,7 @@ function QuoteCard({
     onDelete: (id: number) => void;
 }) {
     const [isEditing, setIsEditing] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
     const [form, setForm] = useState({
         content: quote?.content || "",
         author: quote?.author || "",
@@ -111,6 +112,7 @@ function QuoteCard({
             author: quote.author || "",
             link: quote.link || "",
         });
+        setIsExpanded(false); // quote 변경 시 확장 상태 초기화
     }
 
     const handleSubmit = () => {
@@ -131,7 +133,7 @@ function QuoteCard({
         return (
             <button
                 onClick={() => setIsEditing(true)}
-                className="h-40 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-colors bg-white/50 backdrop-blur-sm"
+                className="h-60 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:border-blue-500 hover:text-blue-500 transition-colors bg-white/50 backdrop-blur-sm"
             >
                 <Plus className="w-8 h-8 mb-2" />
                 <span className="text-sm font-medium">명언 추가하기</span>
@@ -183,12 +185,31 @@ function QuoteCard({
         );
     }
 
+    // 텍스트가 길면 "더 보기" 버튼 표시 (대략 100자 이상)
+    const shouldShowExpand = quote!.content.length > 100;
+    const displayContent = isExpanded ? quote!.content : quote!.content;
+
     return (
-        <div className="h-40 p-5 border border-gray-200 rounded-xl bg-white hover:shadow-md transition-shadow relative group flex flex-col justify-between">
+        <div
+            className={`${isExpanded ? "h-auto min-h-[160px]" : ""} p-5 border border-gray-200 rounded-xl bg-white hover:shadow-md transition-shadow relative group flex flex-col justify-between`}
+        >
             <div>
-                <p className="text-gray-800 font-medium text-sm line-clamp-3 leading-relaxed whitespace-pre-wrap">
-                    &ldquo;{quote!.content}&rdquo;
+                <p
+                    className={`text-gray-800 font-medium text-sm leading-relaxed whitespace-pre-wrap ${!isExpanded ? "line-clamp-5" : ""}`}
+                >
+                    &ldquo;{displayContent}&rdquo;
                 </p>
+                {shouldShowExpand && (
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setIsExpanded(!isExpanded);
+                        }}
+                        className="mt-1 text-xs text-blue-500 hover:text-blue-600 hover:underline"
+                    >
+                        {isExpanded ? "접기" : "더 보기"}
+                    </button>
+                )}
             </div>
             <div className="flex items-end justify-between mt-2">
                 <div className="flex flex-col gap-1 overflow-hidden">
@@ -212,7 +233,10 @@ function QuoteCard({
                         variant="ghost"
                         size="sm"
                         className="h-7 w-7 p-0 hover:bg-gray-100"
-                        onClick={() => setIsEditing(true)}
+                        onClick={() => {
+                            setIsEditing(true);
+                            setIsExpanded(false);
+                        }}
                     >
                         <Edit2 className="w-3.5 h-3.5 text-gray-500" />
                     </Button>
