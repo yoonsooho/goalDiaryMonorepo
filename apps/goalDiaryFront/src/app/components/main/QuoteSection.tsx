@@ -185,8 +185,10 @@ function QuoteCard({
         );
     }
 
-    // 텍스트가 길면 "더 보기" 버튼 표시 (대략 100자 이상)
-    const shouldShowExpand = quote!.content.length > 100;
+    // 텍스트가 길거나 줄바꿈이 많으면 "더 보기" 버튼 표시
+    // 5줄 이상이거나, 80자 이상이면 버튼 표시
+    const lineCount = quote!.content.split("\n").length;
+    const shouldShowExpand = lineCount > 5 || quote!.content.length > 80;
     const displayContent = isExpanded ? quote!.content : quote!.content;
 
     return (
