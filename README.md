@@ -1,5 +1,7 @@
 ## GoalDiary - 목표 관리 및 일정 관리 플랫폼
 
+🌐 **사이트 주소**: [https://goaldiary.vercel.app/](https://goaldiary.vercel.app/)
+
 > 개인의 목표, 명언, 일기와 팀 협업을 하나로 통합한 혁신적인 생산성 관리 플랫폼
 
 ## 🔍 한눈에 보는 프로젝트

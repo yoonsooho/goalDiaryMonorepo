@@ -35,7 +35,7 @@ export class QuoteService {
   async findAll(userId: string): Promise<Quote[]> {
     return await this.quoteRepository.find({
       where: { userId },
-      order: { createdAt: 'DESC' },
+      order: { createdAt: 'ASC' },
     });
   }
 
