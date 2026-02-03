@@ -17,7 +17,7 @@ interface DiaryTimeModalProps {
 const DiaryTimeModal = ({ open, onClose, register, errors }: DiaryTimeModalProps) => {
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent>
+            <DialogContent className="w-[95vw] sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Diary Time</DialogTitle>
                 </DialogHeader>

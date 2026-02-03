@@ -50,7 +50,7 @@ export default function ConvertToTeamModal({ isOpen, onClose, onSubmit }: Conver
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="w-[95vw] sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>팀으로 전환</DialogTitle>
                     <DialogDescription>

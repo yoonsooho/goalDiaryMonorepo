@@ -58,7 +58,7 @@ export default function InviteTeamMemberModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>팀 멤버 초대</DialogTitle>
                     <DialogDescription>

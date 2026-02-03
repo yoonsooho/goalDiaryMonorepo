@@ -58,7 +58,7 @@ export default function CreateScheduleModal({ isOpen, onClose, onSubmit }: Creat
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="w-[95vw] sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>새 일정 만들기</DialogTitle>
                     <DialogDescription>일정의 제목과 기간을 입력해주세요.</DialogDescription>

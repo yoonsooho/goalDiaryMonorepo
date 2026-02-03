@@ -259,7 +259,7 @@ export function TaskCard({
                 }
             }}
             className={`
-                p-4 mb-2 rounded shadow transition-all duration-300  
+                p-3 sm:p-4 mb-2 rounded shadow transition-all duration-300  
                 ${isChecked ? "bg-gray-50" : "bg-white"}
                 ${canSwap ? "cursor-pointer hover:ring-2 hover:ring-blue-400" : ""}
                 ${isSelectedForSwap ? "ring-2 ring-blue-500 bg-blue-50" : ""}
@@ -270,6 +270,11 @@ export function TaskCard({
                 <button
                     onClick={(e) => {
                         e.stopPropagation(); // 드래그 이벤트 전파 방지
+                        // swap 모드일 때는 swap 동작만 수행
+                        if (canSwap && onSwapTimeClick) {
+                            onSwapTimeClick(id);
+                            return;
+                        }
                         let newIsChecked = !isChecked;
                         setIsChecked(newIsChecked);
                         let contentUpdateForm = {
@@ -279,7 +284,7 @@ export function TaskCard({
                         handleSubmit(contentUpdateForm);
                     }}
                     className={`
-                        shrink-0 w-6 h-6 mt-1 rounded-full border-2 flex items-center justify-center transition-all duration-200
+                        shrink-0 w-5 h-5 sm:w-6 sm:h-6 mt-1 rounded-full border-2 flex items-center justify-center transition-all duration-200
                         ${
                             isChecked
                                 ? "bg-green-500 border-green-500 shadow-sm"
@@ -290,7 +295,7 @@ export function TaskCard({
                 >
                     {isChecked && (
                         <svg
-                            className="w-3.5 h-3.5 text-white stroke-current stroke-[3]"
+                            className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-white stroke-current stroke-[3]"
                             viewBox="0 0 24 24"
                             fill="none"
                         >
@@ -300,12 +305,17 @@ export function TaskCard({
                 </button>
 
                 {/* 수정 버튼 & 내용 */}
-                <div className="flex items-start gap-2 flex-1 min-w-0">
+                <div className="flex items-start gap-1.5 sm:gap-2 flex-1 min-w-0">
                     <button
-                        className="p-1 mt-0.5 hover:bg-gray-100 rounded transition-colors shrink-0 opacity-50 hover:opacity-100"
+                        className="p-1 sm:p-1 mt-0.5 hover:bg-gray-100 rounded transition-colors shrink-0 opacity-50 hover:opacity-100"
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
+                            // swap 모드일 때는 swap 동작만 수행
+                            if (canSwap && onSwapTimeClick) {
+                                onSwapTimeClick(id);
+                                return;
+                            }
                             if (isEditMode) {
                                 // 편집 모드일 때 다시 누르면 편집 모드만 종료 (저장 안 함)
                                 setIsEditMode(false);
@@ -315,7 +325,13 @@ export function TaskCard({
                             }
                         }}
                     >
-                        <Image src={editIcon} alt="editIcon" width={18} height={18} />
+                        <Image
+                            src={editIcon}
+                            alt="editIcon"
+                            width={16}
+                            height={16}
+                            className="sm:w-[18px] sm:h-[18px]"
+                        />
                     </button>
 
                     <div className="flex-1 min-w-0">
@@ -348,12 +364,12 @@ export function TaskCard({
                                                 handleSubmit(contentUpdateForm);
                                             }
                                         }}
-                                        className="text-lg font-bold w-full resize-none border rounded p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
+                                        className="text-base sm:text-lg font-bold w-full resize-none border rounded p-1.5 sm:p-2 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white"
                                         rows={2}
                                     />
                                 ) : (
                                     <h2
-                                        className={`text-lg font-bold w-full break-words whitespace-pre-wrap transition-all duration-300
+                                        className={`text-base sm:text-lg font-bold w-full break-words whitespace-pre-wrap transition-all duration-300
                                             ${isChecked ? "line-through text-gray-400" : "text-gray-800"}
                                         `}
                                     >
@@ -373,6 +389,11 @@ export function TaskCard({
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     e.stopPropagation();
+                                                    // swap 모드일 때는 swap 동작만 수행
+                                                    if (canSwap && onSwapTimeClick) {
+                                                        onSwapTimeClick(id);
+                                                        return;
+                                                    }
                                                     // 같은 랭크를 다시 누르면 null로 초기화, 아니면 해당 랭크로 설정
                                                     const next = currentBigRank === rank ? null : (rank as number);
                                                     setCurrentBigRank(next);
@@ -414,42 +435,44 @@ export function TaskCard({
                         {isEditMode ? (
                             <>
                                 {/* 편집 모드일 때: 시간 입력 영역 + 저장 버튼 표시 */}
-                                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                    <input
-                                        type="time"
-                                        value={editStartTime}
-                                        onChange={(e) => setEditStartTime(e.target.value)}
-                                        className={`text-sm px-2 py-1 border rounded focus:outline-none focus:ring-2 bg-white w-32 min-w-[130px] ${
-                                            timeError
-                                                ? "border-red-400 focus:ring-red-500"
-                                                : "border-gray-300 focus:ring-blue-500"
-                                        }`}
-                                    />
-                                    <span className="text-gray-400 text-sm">+ </span>
-                                    <input
-                                        type="number"
-                                        min={5}
-                                        max={24 * 60}
-                                        step={5}
-                                        value={editDurationMinutes}
-                                        onChange={(e) =>
-                                            setEditDurationMinutes(
-                                                Math.max(5, Math.min(24 * 60, Number(e.target.value) || 0))
-                                            )
-                                        }
-                                        className={`text-sm px-2 py-1 border rounded bg-white focus:outline-none focus:ring-2 w-20 ${
-                                            timeError
-                                                ? "border-red-400 focus:ring-red-500"
-                                                : "border-gray-300 focus:ring-blue-500"
-                                        }`}
-                                    />
-                                    <span className="text-gray-400 text-xs">분</span>
-                                    <div className="flex gap-1">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-2">
+                                    <div className="flex items-center gap-1.5 sm:gap-2 flex-1 w-full sm:w-auto">
+                                        <input
+                                            type="time"
+                                            value={editStartTime}
+                                            onChange={(e) => setEditStartTime(e.target.value)}
+                                            className={`text-xs sm:text-sm px-2 py-1.5 sm:py-1 border rounded focus:outline-none focus:ring-2 bg-white flex-1 sm:flex-none sm:w-32 min-w-0 sm:min-w-[130px] ${
+                                                timeError
+                                                    ? "border-red-400 focus:ring-red-500"
+                                                    : "border-gray-300 focus:ring-blue-500"
+                                            }`}
+                                        />
+                                        <span className="text-gray-400 text-xs sm:text-sm shrink-0">+</span>
+                                        <input
+                                            type="number"
+                                            min={5}
+                                            max={24 * 60}
+                                            step={5}
+                                            value={editDurationMinutes}
+                                            onChange={(e) =>
+                                                setEditDurationMinutes(
+                                                    Math.max(5, Math.min(24 * 60, Number(e.target.value) || 0))
+                                                )
+                                            }
+                                            className={`text-xs sm:text-sm px-2 py-1.5 sm:py-1 border rounded bg-white focus:outline-none focus:ring-2 w-16 sm:w-20 ${
+                                                timeError
+                                                    ? "border-red-400 focus:ring-red-500"
+                                                    : "border-gray-300 focus:ring-blue-500"
+                                            }`}
+                                        />
+                                        <span className="text-gray-400 text-xs shrink-0">분</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 sm:gap-1 flex-wrap">
                                         {DURATION_PRESETS.map((presetMinutes) => (
                                             <button
                                                 key={presetMinutes}
                                                 type="button"
-                                                className="px-2 py-0.5 text-[11px] rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
+                                                className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     setEditDurationMinutes((prev) =>
@@ -460,22 +483,22 @@ export function TaskCard({
                                                 +{presetMinutes}
                                             </button>
                                         ))}
+                                        <button
+                                            type="button"
+                                            className="text-xs text-blue-600 font-medium hover:underline px-2 py-1 bg-blue-50 hover:bg-blue-100 rounded transition-colors whitespace-nowrap"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                let contentUpdateForm = {
+                                                    text: editValue,
+                                                    isCompleted: isChecked,
+                                                };
+                                                handleSubmit(contentUpdateForm);
+                                            }}
+                                        >
+                                            저장
+                                        </button>
                                     </div>
-                                    <button
-                                        type="button"
-                                        className="text-xs text-blue-600 font-medium hover:underline px-2 py-1 bg-blue-50 hover:bg-blue-100 rounded transition-colors"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            let contentUpdateForm = {
-                                                text: editValue,
-                                                isCompleted: isChecked,
-                                            };
-                                            handleSubmit(contentUpdateForm);
-                                        }}
-                                    >
-                                        저장
-                                    </button>
                                 </div>
                                 {timeError && (
                                     <p className="mt-1 text-xs text-red-500 whitespace-pre-wrap">{timeError}</p>
@@ -490,21 +513,23 @@ export function TaskCard({
                         ) : startTime || endTime ? (
                             // 편집 모드가 아니고 시간이 있을 때: 시간 + 기간 표시
                             <div
-                                className={`flex items-center gap-1.5 mt-1.5 text-sm transition-colors duration-300 ${
+                                className={`flex items-center gap-1 sm:gap-1.5 mt-1.5 text-xs sm:text-sm transition-colors duration-300 flex-wrap ${
                                     isChecked ? "text-gray-300" : "text-gray-500"
                                 }`}
                             >
-                                <span className="bg-gray-100 px-1.5 py-0.5 rounded text-xs font-medium">Time</span>
-                                <span>{startTime || "..."}</span>
+                                <span className="bg-gray-100 px-1.5 py-0.5 rounded text-[10px] sm:text-xs font-medium">
+                                    Time
+                                </span>
+                                <span className="whitespace-nowrap">{startTime || "..."}</span>
                                 <span>~</span>
-                                <span>{endTime || "..."}</span>
+                                <span className="whitespace-nowrap">{endTime || "..."}</span>
                                 {isSwapMode && (
-                                    <span className="ml-2 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded">
+                                    <span className="ml-1 sm:ml-2 px-1.5 sm:px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] sm:text-xs font-medium rounded whitespace-nowrap">
                                         교환 가능
                                     </span>
                                 )}
                                 {isSelectedForSwap && (
-                                    <span className="ml-2 px-2 py-0.5 bg-blue-600 text-white text-xs font-bold rounded">
+                                    <span className="ml-1 sm:ml-2 px-1.5 sm:px-2 py-0.5 bg-blue-600 text-white text-[10px] sm:text-xs font-bold rounded whitespace-nowrap">
                                         선택됨
                                     </span>
                                 )}
@@ -512,42 +537,44 @@ export function TaskCard({
                         ) : (
                             // 편집 모드가 아니고 시간이 없을 때: 시간 입력 영역 (완료 상태가 아닐 때만)
                             !isChecked && (
-                                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                    <input
-                                        type="time"
-                                        value={editStartTime}
-                                        onChange={(e) => setEditStartTime(e.target.value)}
-                                        className={`text-sm px-2 py-1 border rounded focus:outline-none focus:ring-2 bg-gray-50 w-32 min-w-[130px] ${
-                                            timeError
-                                                ? "border-red-400 focus:ring-red-500"
-                                                : "border-gray-300 focus:ring-blue-500"
-                                        }`}
-                                    />
-                                    <span className="text-gray-400 text-sm">+ </span>
-                                    <input
-                                        type="number"
-                                        min={5}
-                                        max={24 * 60}
-                                        step={5}
-                                        value={editDurationMinutes}
-                                        onChange={(e) =>
-                                            setEditDurationMinutes(
-                                                Math.max(5, Math.min(24 * 60, Number(e.target.value) || 0))
-                                            )
-                                        }
-                                        className={`text-sm px-2 py-1 border rounded bg-gray-50 focus:outline-none focus:ring-2 w-20 ${
-                                            timeError
-                                                ? "border-red-400 focus:ring-red-500"
-                                                : "border-gray-300 focus:ring-blue-500"
-                                        }`}
-                                    />
-                                    <span className="text-gray-400 text-xs">분</span>
-                                    <div className="flex gap-1">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-2">
+                                    <div className="flex items-center gap-1.5 sm:gap-2 flex-1 w-full sm:w-auto">
+                                        <input
+                                            type="time"
+                                            value={editStartTime}
+                                            onChange={(e) => setEditStartTime(e.target.value)}
+                                            className={`text-xs sm:text-sm px-2 py-1.5 sm:py-1 border rounded focus:outline-none focus:ring-2 bg-gray-50 flex-1 sm:flex-none sm:w-32 min-w-0 sm:min-w-[130px] ${
+                                                timeError
+                                                    ? "border-red-400 focus:ring-red-500"
+                                                    : "border-gray-300 focus:ring-blue-500"
+                                            }`}
+                                        />
+                                        <span className="text-gray-400 text-xs sm:text-sm shrink-0">+</span>
+                                        <input
+                                            type="number"
+                                            min={5}
+                                            max={24 * 60}
+                                            step={5}
+                                            value={editDurationMinutes}
+                                            onChange={(e) =>
+                                                setEditDurationMinutes(
+                                                    Math.max(5, Math.min(24 * 60, Number(e.target.value) || 0))
+                                                )
+                                            }
+                                            className={`text-xs sm:text-sm px-2 py-1.5 sm:py-1 border rounded bg-gray-50 focus:outline-none focus:ring-2 w-16 sm:w-20 ${
+                                                timeError
+                                                    ? "border-red-400 focus:ring-red-500"
+                                                    : "border-gray-300 focus:ring-blue-500"
+                                            }`}
+                                        />
+                                        <span className="text-gray-400 text-xs shrink-0">분</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 sm:gap-1 flex-wrap">
                                         {[15, 30, 60].map((p) => (
                                             <button
                                                 key={p}
                                                 type="button"
-                                                className="px-2 py-0.5 text-[11px] rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
+                                                className="px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] rounded-full border border-gray-200 bg-white text-gray-600 hover:bg-gray-100"
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     setEditDurationMinutes((prev) =>
@@ -558,19 +585,19 @@ export function TaskCard({
                                                 +{p}
                                             </button>
                                         ))}
+                                        <button
+                                            className="text-xs text-blue-600 font-medium hover:underline px-2 whitespace-nowrap"
+                                            onClick={() => {
+                                                let contentUpdateForm = {
+                                                    text: editValue,
+                                                    isCompleted: isChecked,
+                                                };
+                                                handleSubmit(contentUpdateForm);
+                                            }}
+                                        >
+                                            저장
+                                        </button>
                                     </div>
-                                    <button
-                                        className="text-xs text-blue-600 font-medium hover:underline px-2"
-                                        onClick={() => {
-                                            let contentUpdateForm = {
-                                                text: editValue,
-                                                isCompleted: isChecked,
-                                            };
-                                            handleSubmit(contentUpdateForm);
-                                        }}
-                                    >
-                                        저장
-                                    </button>
                                 </div>
                             )
                         )}
@@ -614,16 +641,24 @@ export function TaskCard({
                 </div>
 
                 <button
-                    className="p-2 hover:bg-red-50 rounded-full transition-colors shrink-0 group"
-                    onClick={() => handleDeleteItem?.(id)}
+                    className="p-1.5 sm:p-2 hover:bg-red-50 rounded-full transition-colors shrink-0 group"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        // swap 모드일 때는 swap 동작만 수행
+                        if (canSwap && onSwapTimeClick) {
+                            onSwapTimeClick(id);
+                            return;
+                        }
+                        handleDeleteItem?.(id);
+                    }}
                     title="삭제"
                 >
                     <Image
-                        className="opacity-40 group-hover:opacity-100 transition-opacity"
+                        className="opacity-40 group-hover:opacity-100 transition-opacity sm:w-[18px] sm:h-[18px]"
                         src={deleteIcon}
                         alt="deleteIcon"
-                        width={18}
-                        height={18}
+                        width={16}
+                        height={16}
                     />
                 </button>
             </div>

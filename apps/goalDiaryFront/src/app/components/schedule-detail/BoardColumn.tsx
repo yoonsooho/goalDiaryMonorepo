@@ -84,36 +84,36 @@ export function BoardColumn({
     ];
 
     return (
-        <div className="w-full p-4 bg-gray-100 rounded-lg relative h-full">
+        <div className="w-full p-3 sm:p-4 bg-gray-100 rounded-lg relative h-full">
             <ConfirmModal />
-            <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center gap-2">
+            <div className="flex justify-between items-center mb-3 sm:mb-4">
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
                     <button
-                        className="p-2 hover:rounded-full hover:bg-gray-200 shrink-0"
+                        className="p-1.5 sm:p-2 hover:rounded-full hover:bg-gray-200 shrink-0"
                         onClick={(e) => {
                             e.preventDefault();
                             setIsEditMode(!isEditMode);
                         }}
                     >
-                        <Image src={editIcon} alt="editIcon" width={20} height={20} />
+                        <Image src={editIcon} alt="editIcon" width={18} height={18} className="sm:w-5 sm:h-5" />
                     </button>
-                    <form className="flex items-center" onSubmit={(e) => handleSubmit(e)}>
+                    <form className="flex items-center flex-1 min-w-0" onSubmit={(e) => handleSubmit(e)}>
                         {isEditMode ? (
                             <input
                                 type="text"
                                 value={editValue}
                                 onChange={(e) => setEditValue(e.target.value)}
                                 onBlur={(e) => handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>)}
-                                className="text-lg font-bold w-full"
+                                className="text-base sm:text-lg font-bold w-full min-w-0"
                             />
                         ) : (
-                            <h2 className="text-lg font-bold w-full">{title}</h2>
+                            <h2 className="text-base sm:text-lg font-bold w-full truncate">{title}</h2>
                         )}
                     </form>
                 </div>
 
                 <button
-                    className="p-2 hover:rounded-full hover:bg-gray-200 shrink-0"
+                    className="p-1.5 sm:p-2 hover:rounded-full hover:bg-gray-200 shrink-0 ml-2"
                     onClick={() =>
                         openConfirm(() => handleDeleteBoard?.(id), {
                             title: "보드 삭제",
@@ -127,7 +127,7 @@ export function BoardColumn({
                     {/* <Image src={deleteIcon} alt="deleteIcon" width={20} height={20} /> */}
                 </button>
             </div>
-            <div className="h-96 overflow-y-auto px-1 py-1">
+            <div className="h-[300px] sm:h-96 overflow-y-auto px-1 py-1">
                 {/* 시간이 설정된 아이템을 startTime 기준으로 정렬 */}
                 {orderedItems.map((item) => (
                     <TaskCard
@@ -152,7 +152,7 @@ export function BoardColumn({
                     e.preventDefault();
                     handleAdd(e);
                 }}
-                className="flex items-center gap-2 mt-4 p-2 bg-white rounded-lg shadow-sm"
+                className="flex items-center gap-1.5 sm:gap-2 mt-3 sm:mt-4 p-1.5 sm:p-2 bg-white rounded-lg shadow-sm"
             >
                 <textarea
                     value={addValue}
@@ -165,15 +165,15 @@ export function BoardColumn({
                         }
                     }}
                     placeholder="할일 추가"
-                    className="flex-1 pl-3 py-2 text-sm border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md resize-none"
+                    className="flex-1 pl-2 sm:pl-3 py-1.5 sm:py-2 text-xs sm:text-sm border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md resize-none"
                 />
                 <button
                     type="submit"
                     disabled={!addValue.trim()}
-                    className="p-2 hover:rounded-full hover:bg-gray-200 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+                    className="p-1.5 sm:p-2 hover:rounded-full hover:bg-gray-200 shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                 >
                     <div className="flex items-center">
-                        <Image src={addIcon} alt="addIcon" width={20} height={20} />
+                        <Image src={addIcon} alt="addIcon" width={18} height={18} className="sm:w-5 sm:h-5" />
                     </div>
                 </button>
             </form>

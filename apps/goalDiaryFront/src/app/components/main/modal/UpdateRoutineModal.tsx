@@ -73,7 +73,7 @@ export default function UpdateRoutineModal({ isOpen, onClose, onSubmit, routine 
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>루틴 수정</DialogTitle>
                     <DialogDescription>루틴 정보를 수정해주세요.</DialogDescription>

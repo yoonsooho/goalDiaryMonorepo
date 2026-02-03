@@ -90,8 +90,11 @@ export class AuthController {
     res.cookie('access_token', tokens.accessToken, accessCookieOptions);
     res.cookie('refresh_token', tokens.refreshToken, refreshCookieOptions);
 
+    // 모바일 앱을 위해 JSON으로도 토큰 반환
     return {
       message: '로그인 성공',
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
     };
   }
 

@@ -42,21 +42,21 @@ export default function ScheduleDetail({ scheduleId }: { scheduleId: number }) {
     } = useScheduleDetail(scheduleId);
 
     return (
-        <div className="min-h-screen bg-slate-50 px-6 py-6" suppressHydrationWarning>
+        <div className="min-h-screen bg-slate-50 px-4 py-4 sm:px-6 sm:py-6" suppressHydrationWarning>
             <LoadingOverlay open={isMutating} text="업데이트 중입니다..." />
 
             {/* 상단 헤더 영역 */}
-            <header className="mb-6">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl font-semibold text-slate-900">{scheduleTitle}</h1>
-                        <p className="mt-1 text-sm text-slate-500">
+            <header className="mb-4 sm:mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
+                    <div className="flex-1">
+                        <h1 className="text-xl sm:text-2xl font-semibold text-slate-900">{scheduleTitle}</h1>
+                        <p className="mt-1 text-xs sm:text-sm text-slate-500">
                             이 일정에 대한 할 일 보드와 오늘 스케줄을 한 화면에서 확인하세요.
                         </p>
                     </div>
                     <button
                         onClick={toggleSwapMode}
-                        className="px-4 py-2 rounded-lg font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700"
+                        className="px-3 py-2 sm:px-4 sm:py-2 rounded-lg text-sm sm:text-base font-medium transition-colors bg-blue-600 text-white hover:bg-blue-700 whitespace-nowrap"
                     >
                         {isSwapMode ? "시간 교환 모드 종료" : "시간 교환"}
                     </button>
@@ -73,12 +73,12 @@ export default function ScheduleDetail({ scheduleId }: { scheduleId: number }) {
             </header>
 
             {/* 메인 레이아웃: 데스크톱에서는 좌우 2컬럼, 모바일에서는 위아래 */}
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,0.6fr)_minmax(0,0.4fr)] items-start">
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,0.6fr)_minmax(0,0.4fr)] items-start">
                 {/* 왼쪽: 할 일 보드 */}
-                <section className="space-y-4">
+                <section className="space-y-3 sm:space-y-4">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h2 className="text-lg font-semibold text-slate-900">할 일 보드</h2>
+                            <h2 className="text-base sm:text-lg font-semibold text-slate-900">할 일 보드</h2>
                             <span className="text-xs text-slate-500">카드 안에서 세부 내용을 관리하세요.</span>
                         </div>
                     </div>
@@ -105,15 +105,15 @@ export default function ScheduleDetail({ scheduleId }: { scheduleId: number }) {
                 </section>
 
                 {/* 오른쪽: 오늘 스케줄 타임라인 */}
-                <section className="space-y-3">
+                <section className="space-y-2 sm:space-y-3">
                     <div className="flex items-center gap-2">
-                        <h2 className="text-lg font-semibold text-sky-800">오늘 스케줄</h2>
+                        <h2 className="text-base sm:text-lg font-semibold text-sky-800">오늘 스케줄</h2>
                         <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-medium text-sky-700">
                             TODAY
                         </span>
                     </div>
                     <p className="text-xs text-sky-700/80">시간대별로 정리된 오늘의 할 일을 한눈에 확인하세요.</p>
-                    <div className="rounded-xl border border-sky-100 bg-sky-50/70 p-3 max-h-[520px] overflow-y-auto space-y-2">
+                    <div className="rounded-xl border border-sky-100 bg-sky-50/70 p-2 sm:p-3 max-h-[400px] sm:max-h-[520px] overflow-y-auto space-y-2">
                         {timelineEvents.length === 0 ? (
                             <p className="text-sm text-sky-700/70">등록된 스케줄이 없습니다.</p>
                         ) : (

@@ -49,21 +49,21 @@ export default function Home() {
             <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
             <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
                 {/* Hero Section */}
-                <section className="px-4 py-20 sm:px-6 lg:px-8">
+                <section className="px-4 py-12 sm:py-16 lg:py-20 sm:px-6 lg:px-8">
                     <div className="mx-auto max-w-7xl">
-                        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+                        <div className="grid gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16 items-center">
                             {/* Left: Hero Content */}
                             <div className="flex flex-col justify-center">
-                                <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 rounded-full text-blue-700 text-sm font-medium mb-6 w-fit">
-                                    <Target className="h-4 w-4" />
+                                <div className="inline-flex items-center gap-2 px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-100 rounded-full text-blue-700 text-xs sm:text-sm font-medium mb-4 sm:mb-6 w-fit">
+                                    <Target className="h-3 w-3 sm:h-4 sm:w-4" />
                                     <span>BIG3 우선순위 스케줄링</span>
                                 </div>
-                                <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl lg:text-7xl">
+                                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight text-gray-900">
                                     <span className="text-blue-600">오늘의 핵심 3가지</span>
                                     <br />
                                     먼저 시간에 배치하기
                                 </h1>
-                                <p className="mt-6 text-xl leading-8 text-gray-600">
+                                <p className="mt-4 sm:mt-6 text-base sm:text-lg lg:text-xl leading-7 sm:leading-8 text-gray-600">
                                     일반 Todo처럼 체크만 하는 게 아니라,{" "}
                                     <strong className="text-gray-900">BIG1/BIG2/BIG3를 먼저 고르고</strong> → 그걸
                                     우선으로 시간 배정 → 나머지 작업을 주변에 배치하는{" "}
@@ -71,16 +71,16 @@ export default function Home() {
                                 </p>
 
                                 {/* Key Differentiator */}
-                                <div className="mt-8 p-6 bg-white rounded-xl border-2 border-blue-200 shadow-sm">
-                                    <div className="flex items-start gap-3">
+                                <div className="mt-6 sm:mt-8 p-4 sm:p-6 bg-white rounded-xl border-2 border-blue-200 shadow-sm">
+                                    <div className="flex items-start gap-2 sm:gap-3">
                                         <div className="flex-shrink-0">
-                                            <div className="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                <Zap className="h-5 w-5 text-blue-600" />
+                                            <div className="h-8 w-8 sm:h-10 sm:w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                <Zap className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                                             </div>
                                         </div>
                                         <div>
-                                            <h3 className="font-semibold text-gray-900">기존 일정 앱과의 차이점</h3>
-                                            <p className="mt-2 text-gray-600 text-sm">
+                                            <h3 className="text-sm sm:text-base font-semibold text-gray-900">기존 일정 앱과의 차이점</h3>
+                                            <p className="mt-1 sm:mt-2 text-gray-600 text-xs sm:text-sm">
                                                 하루에 해야 할 일이 많을 때, 무엇이 진짜 중요한지 한눈에 안 보였나요?
                                                 GoalDiary는{" "}
                                                 <strong>오늘 꼭 지켜야 할 핵심 3가지(BIG3)를 먼저 시간에 고정</strong>

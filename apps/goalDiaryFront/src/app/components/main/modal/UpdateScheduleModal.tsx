@@ -64,7 +64,7 @@ export default function UpdateScheduleModal({ isOpen, onClose, onSubmit, default
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="w-[95vw] sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>일정 수정</DialogTitle>
                     <DialogDescription>일정의 제목과 기간을 입력해주세요.</DialogDescription>

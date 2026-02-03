@@ -141,7 +141,7 @@ export default function NotificationsModal({ isOpen, onClose }: NotificationsMod
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[500px] max-h-[600px] flex flex-col">
+            <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[85vh] sm:max-h-[600px] flex flex-col">
                 <DialogHeader>
                     <div className="flex items-center justify-between">
                         <DialogTitle className="flex items-center gap-2">

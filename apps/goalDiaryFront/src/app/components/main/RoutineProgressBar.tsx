@@ -21,52 +21,52 @@ const RoutineProgressBar = () => {
     const completionRate = todayRoutinesProgress.completionRate > 0 ? todayRoutinesProgress.completionRate : 0;
 
     return (
-        <Card className="mb-4 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
-            <CardContent className="p-4">
-                <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                        <Target className="h-4 w-4 text-purple-600" />
-                        <span className="text-sm font-medium text-gray-700">오늘의 루틴</span>
+        <Card className="mb-3 sm:mb-4 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
+            <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                        <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-purple-600" />
+                        <span className="text-xs sm:text-sm font-medium text-gray-700">오늘의 루틴</span>
                     </div>
                     <div className="flex items-center gap-1">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span className="text-sm font-semibold text-gray-900">
+                        <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-600" />
+                        <span className="text-xs sm:text-sm font-semibold text-gray-900">
                             {completedRoutines}/{totalRoutines}
                         </span>
                     </div>
                 </div>
 
                 {/* 프로그레스 바 */}
-                <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                <div className="w-full bg-gray-200 rounded-full h-2 sm:h-2.5 mb-1.5 sm:mb-2">
                     <div
-                        className="bg-gradient-to-r from-purple-500 to-pink-500 h-2.5 rounded-full transition-width duration-500 ease-out"
+                        className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 sm:h-2.5 rounded-full transition-width duration-500 ease-out"
                         style={{ width: `${completionRate}%` }}
                     />
                 </div>
 
                 {/* 완료율 텍스트 */}
-                <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-600">
+                <div className="flex items-center justify-between flex-wrap gap-1">
+                    <span className="text-[10px] sm:text-xs text-gray-600">
                         {completionRate === 100 ? "🎉 모든 루틴 완료!" : `${Math.round(completionRate)}% 완료`}
                     </span>
                     {completionRate > 0 && completionRate < 100 && (
-                        <span className="text-xs text-purple-600 font-medium">
+                        <span className="text-[10px] sm:text-xs text-purple-600 font-medium">
                             {totalRoutines - completedRoutines}개 남음
                         </span>
                     )}
                 </div>
 
-                {/* 완료된 루틴 목록 (작은 화면에서는 숨김) */}
+                {/* 완료된 루틴 목록 */}
                 {completedRoutines > 0 && todayRoutines && (
-                    <div className="mt-3 pt-3 border-t border-purple-100">
+                    <div className="mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-purple-100">
                         <div className="flex flex-wrap gap-1">
                             {todayRoutines.map((routine: any) => (
                                 <span
                                     key={routine.id}
-                                    className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full"
+                                    className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 bg-green-100 text-green-700 text-[10px] sm:text-xs rounded-full max-w-full"
                                 >
-                                    <CheckCircle className="h-3 w-3" />
-                                    {routine.title}
+                                    <CheckCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 shrink-0" />
+                                    <span className="truncate">{routine.title}</span>
                                 </span>
                             ))}
                         </div>

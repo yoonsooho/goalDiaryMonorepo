@@ -62,7 +62,7 @@ export default function CreateRoutineModal({ isOpen, onClose, onSubmit }: Create
 
     return (
         <Dialog open={isOpen} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
+            <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>새 루틴 만들기</DialogTitle>
                     <DialogDescription>루틴의 정보를 입력해주세요.</DialogDescription>

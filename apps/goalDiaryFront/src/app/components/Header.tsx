@@ -92,12 +92,12 @@ export default function Header() {
             <MyTeamsModal isOpen={isMyTeamsModalOpen} onClose={() => setIsMyTeamsModalOpen(false)} />
             <NotificationsModal isOpen={isNotificationsModalOpen} onClose={() => setIsNotificationsModalOpen(false)} />
             <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center h-16">
-                    <div className="flex items-center space-x-24">
+                <div className="flex justify-between items-center h-14 sm:h-16">
+                    <div className="flex items-center space-x-4 sm:space-x-8 lg:space-x-24">
                         <Link href="/main">
-                            <h1 className="text-xl font-semibold text-gray-900">Goal Diary</h1>
+                            <h1 className="text-lg sm:text-xl font-semibold text-gray-900">Goal Diary</h1>
                         </Link>
-                        <div className="flex items-center space-x-1 bg-muted p-1 rounded-md">
+                        <div className="hidden sm:flex items-center space-x-1 bg-muted p-1 rounded-md">
                             <Link
                                 href="/main"
                                 className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 ${
@@ -121,7 +121,7 @@ export default function Header() {
                         </div>
                     </div>
                     {mounted && !isLoading && user && user.username && (
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2 sm:space-x-4">
                             <Button
                                 variant="ghost"
                                 size="sm"
@@ -144,11 +144,16 @@ export default function Header() {
                             >
                                 <Users className="w-5 h-5" />
                             </Button>
-                            <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2 sm:space-x-3">
                                 <div className="flex flex-col text-right">
                                     <DropdownMenuDialog
-                                        className="text-sm font-medium text-gray-900 cursor-pointer"
-                                        title={`안녕하세요, ${user?.username} 님!`}
+                                        className="text-xs sm:text-sm font-medium text-gray-900 cursor-pointer"
+                                        title={
+                                            <span>
+                                                <span className="sm:hidden">{user?.username}</span>
+                                                <span className="hidden sm:inline">{`안녕하세요, ${user?.username} 님!`}</span>
+                                            </span>
+                                        }
                                         dropdownItemsList={[
                                             { label: "로그아웃", onClick: handleLogout },
                                             { label: "회원탈퇴", onClick: confirmWithdrawal },

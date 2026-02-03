@@ -82,16 +82,21 @@ const Main = () => {
                     <QuoteSection />
 
                     {/* 액션 버튼들 */}
-                    <div className="mb-6 flex gap-3">
-                        <Button onClick={() => setIsScheduleModalOpen(true)} className="flex items-center gap-2">
-                            <PlusIcon className="h-4 w-4" />새 일정 만들기
+                    <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
+                        <Button
+                            onClick={() => setIsScheduleModalOpen(true)}
+                            className="flex items-center justify-center gap-2 w-full sm:w-auto"
+                        >
+                            <PlusIcon className="h-4 w-4" />
+                            <span className="text-sm sm:text-base">새 일정 만들기</span>
                         </Button>
                         <Button
                             onClick={() => setIsRoutineModalOpen(true)}
                             variant="outline"
-                            className="flex items-center gap-2"
+                            className="flex items-center justify-center gap-2 w-full sm:w-auto"
                         >
-                            <PlusIcon className="h-4 w-4" />새 루틴 만들기
+                            <PlusIcon className="h-4 w-4" />
+                            <span className="text-sm sm:text-base">새 루틴 만들기</span>
                         </Button>
                     </div>
                 </div>

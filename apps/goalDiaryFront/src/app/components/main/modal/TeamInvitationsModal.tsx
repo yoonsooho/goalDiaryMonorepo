@@ -68,7 +68,7 @@ export default function TeamInvitationsModal({ isOpen, onClose }: TeamInvitation
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
-            <DialogContent className="sm:max-w-[500px]">
+            <DialogContent className="w-[95vw] sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>팀 초대 알림</DialogTitle>
                     <DialogDescription>
