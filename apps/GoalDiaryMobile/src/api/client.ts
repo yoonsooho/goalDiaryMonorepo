@@ -1,9 +1,12 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+// 개발 환경: 로컬 백엔드 사용 (로컬 네트워크 IP)
+// 프로덕션: Render 서버 사용
+// Google OAuth는 IP 주소를 허용하지 않으므로 Google 로그인만 Render 서버 사용
 const API_BASE_URL = __DEV__
-    ? "http://172.30.1.55:3001" // 개발 환경 (실제 디바이스용 로컬 IP) - 백엔드에 /api prefix 없음
-    : "https://tododndback.onrender.com"; // 프로덕션
+    ? "http://172.30.1.55:3001" // 로컬 네트워크 IP (실제 디바이스에서 접근 가능)
+    : "https://tododndback.onrender.com";
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,

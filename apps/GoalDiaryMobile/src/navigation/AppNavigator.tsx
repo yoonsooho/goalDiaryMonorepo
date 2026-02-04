@@ -9,6 +9,7 @@ import CreateScheduleScreen from "../screens/CreateScheduleScreen";
 import CreateRoutineScreen from "../screens/CreateRoutineScreen";
 import DiaryDetailScreen from "../screens/DiaryDetailScreen";
 import LoginScreen from "../screens/LoginScreen";
+import RegisterScreen from "../screens/RegisterScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -43,6 +44,15 @@ export default function AppNavigator() {
                     options={{
                         headerShown: Boolean(false),
                         gestureEnabled: Boolean(false),
+                    }}
+                />
+                <Stack.Screen
+                    name="Register"
+                    component={RegisterScreen}
+                    options={{
+                        title: "회원가입",
+                        headerShown: Boolean(true),
+                        gestureEnabled: Boolean(true),
                     }}
                 />
                 <Stack.Screen
