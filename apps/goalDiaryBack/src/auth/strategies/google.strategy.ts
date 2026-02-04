@@ -16,15 +16,31 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       );
     }
 
+    // Google OAuth는 IP 주소와 localhost를 허용하지 않으므로 유효한 도메인만 사용 가능
+    // 모바일 앱 개발 시에도 실제 도메인(Render 서버)을 사용해야 함
+    // 개발 환경에서도 Render 서버의 도메인 사용 (localhost는 모바일에서 접근 불가)
+    const defaultCallbackURL = process.env.BACKEND_URL
+      ? `${process.env.BACKEND_URL}/auth/google/callback`
+      : process.env.NODE_ENV === 'production'
+        ? 'https://tododndback.onrender.com/auth/google/callback'
+        : 'https://tododndback.onrender.com/auth/google/callback'; // 개발 환경에서도 Render 서버 사용
+
     super({
       clientID: clientID || 'dummy', // 에러 방지를 위한 더미 값
       clientSecret: clientSecret || 'dummy',
-      callbackURL: callbackURL || 'http://localhost:3000',
+      callbackURL: callbackURL || defaultCallbackURL,
       scope: ['email', 'profile'],
+      passReqToCallback: true, // request 객체를 validate 메서드에 전달
     });
+
+    console.log(
+      'Google OAuth Strategy initialized with callback URL:',
+      callbackURL || defaultCallbackURL,
+    );
   }
 
   async validate(
+    req: any,
     accessToken: string,
     refreshToken: string,
     profile: any,
@@ -37,6 +53,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       socialId: id,
       social: 'google',
       accessToken,
+      // 쿠키에서 모바일 여부 확인 (Guard에서 설정)
+      isMobile: req.cookies?.google_oauth_mobile === 'true',
     };
     done(null, user);
   }

@@ -23,8 +23,9 @@ export class AuthController {
 
   @Get('google')
   @UseGuards(GoogleAuthGuard)
-  async googleAuth(@Req() req, @Res({ passthrough: true }) res: Response) {
-    return res.redirect(process.env.FRONTEND_URL || 'http://localhost:3000');
+  async googleAuth() {
+    // Google OAuth 시작 - Passport가 자동으로 Google로 리다이렉트
+    // mobile=true 쿼리 파라미터는 Guard에서 쿠키로 저장됨
   }
 
   @Get('google/callback')
@@ -33,34 +34,168 @@ export class AuthController {
     @Req() req,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const tokens = await this.authService.googleLogin(req);
-    const isProduction = process.env.NODE_ENV === 'production';
+    try {
+      const tokens = await this.authService.googleLogin(req);
+      const isProduction = process.env.NODE_ENV === 'production';
 
-    // Cross-origin 배포 환경을 위한 쿠키 설정
-    const accessCookieOptions = {
-      maxAge: 1000 * 60 * 15, // 15분
-      secure: isProduction, // HTTPS에서만
-      sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax', // Cross-origin 허용
-      path: '/',
-    };
+      // 모바일 앱 요청인지 확인
+      // 기본적으로 모든 요청을 모바일로 처리하고, 명확한 웹 요청만 제외
+      const requestMobileFlag = (req as any)._isMobileOAuth === true;
+      const mobileCookie = req.cookies?.google_oauth_mobile === 'true';
+      const state = req.query?.state as string;
+      const mobileQuery = req.query?.mobile;
+      const userAgent = req.headers['user-agent'] || '';
+      const referer = req.headers['referer'] || '';
 
-    const refreshCookieOptions = {
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7일
-      secure: isProduction,
-      sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
-      httpOnly: true, // XSS 방지
-      path: '/',
-    };
+      // 모바일 요청인지 확인
+      // 기본적으로 모든 요청을 모바일로 처리하고, 명확한 웹 요청만 제외
+      const hasMobileFlag =
+        requestMobileFlag ||
+        mobileCookie ||
+        req.user?.isMobile === true ||
+        state === 'mobile' ||
+        mobileQuery === 'true' ||
+        userAgent.includes('Expo') ||
+        userAgent.includes('ReactNative');
 
-    res.cookie('access_token', tokens.accessToken, accessCookieOptions);
-    res.cookie('refresh_token', tokens.refreshToken, refreshCookieOptions);
+      // 명확한 웹 요청인지 확인 (웹 브라우저에서 직접 온 요청만)
+      // Referer가 프론트엔드 도메인이고, Google 도메인이 아니고, User-Agent가 일반 브라우저인 경우만 웹으로 처리
+      // Google OAuth 콜백은 Referer가 Google 도메인이거나 없을 수 있으므로 기본적으로 모바일로 처리
+      const isDefinitelyWebRequest =
+        referer &&
+        !referer.includes('accounts.google.com') && // Google OAuth 리다이렉트는 제외
+        !referer.includes('google.com') && // Google 도메인은 제외
+        !referer.includes('localhost:3001') && // 로컬 백엔드는 제외 (모바일에서 접근 불가)
+        !referer.includes('onrender.com') && // Render 서버는 제외
+        (referer.includes('goaldiary.vercel.app') ||
+          referer.includes('localhost:3000')) &&
+        userAgent.includes('Mozilla') &&
+        !userAgent.includes('Expo') &&
+        !userAgent.includes('ReactNative') &&
+        !userAgent.includes('Mobile'); // Mobile User-Agent는 제외
 
-    res.redirect(process.env.FRONTEND_URL || 'http://localhost:3000');
+      // 기본적으로 모든 요청을 모바일로 처리
+      // 명확한 웹 요청이고 모바일 플래그가 없을 때만 웹으로 처리
+      // 로컬 개발 환경에서는 무조건 모바일로 처리 (Render 서버가 업데이트되지 않았을 수 있음)
+      const isMobile =
+        process.env.NODE_ENV !== 'production' || // 개발 환경이면 무조건 모바일
+        !isDefinitelyWebRequest ||
+        hasMobileFlag;
+
+      // 쿠키 삭제 (사용 후 정리)
+      if (mobileCookie) {
+        res.clearCookie('google_oauth_mobile');
+      }
+
+      console.log('Google callback - Mobile detection:', {
+        requestMobileFlag,
+        mobileCookie,
+        mobileQuery,
+        state,
+        userAgent: userAgent.substring(0, 100),
+        reqUserIsMobile: req.user?.isMobile,
+        hasMobileFlag,
+        isDefinitelyWebRequest,
+        isMobile,
+        redirectTarget: isMobile
+          ? 'MOBILE (goaldiary://)'
+          : 'WEB (goaldiary.vercel.app)',
+        allCookies: Object.keys(req.cookies || {}),
+        cookieValue: req.cookies?.google_oauth_mobile,
+        referer: req.headers['referer'],
+      });
+
+      // 모바일 감지가 실패했지만 request 객체에 플래그가 있으면 모바일로 처리
+      if (!isMobile && requestMobileFlag) {
+        console.warn('Request mobile flag detected - forcing mobile redirect');
+        const mobileRedirectUrl = `goaldiary://auth/callback?accessToken=${encodeURIComponent(tokens.accessToken)}&refreshToken=${encodeURIComponent(tokens.refreshToken)}`;
+        res.redirect(mobileRedirectUrl);
+        return;
+      }
+
+      // 추가 안전장치: Referer가 없거나 Google/onrender.com이면 무조건 모바일로 처리
+      // 로컬 개발 환경에서는 기본적으로 모바일로 처리
+      if (
+        !isMobile &&
+        (!referer ||
+          referer.includes('google.com') ||
+          referer.includes('onrender.com') ||
+          process.env.NODE_ENV !== 'production')
+      ) {
+        console.warn(
+          'Referer indicates mobile request or local dev - forcing mobile redirect',
+        );
+        const mobileRedirectUrl = `goaldiary://auth/callback?accessToken=${encodeURIComponent(tokens.accessToken)}&refreshToken=${encodeURIComponent(tokens.refreshToken)}`;
+        res.redirect(mobileRedirectUrl);
+        return;
+      }
+
+      // 기본적으로 모바일로 처리하고, 명확한 웹 요청만 제외
+      // Google OAuth 콜백은 Referer가 Google 도메인이거나 없을 수 있으므로 기본적으로 모바일로 처리
+      if (isMobile) {
+        // 모바일 앱의 경우 리다이렉트 URL에 토큰을 쿼리 파라미터로 포함
+        // URL 인코딩을 통해 특수문자 처리
+        if (!tokens.accessToken || !tokens.refreshToken) {
+          console.error('Tokens are missing:', {
+            hasAccessToken: !!tokens.accessToken,
+            hasRefreshToken: !!tokens.refreshToken,
+          });
+          throw new Error('토큰 생성에 실패했습니다.');
+        }
+
+        const mobileRedirectUrl = `goaldiary://auth/callback?accessToken=${encodeURIComponent(tokens.accessToken)}&refreshToken=${encodeURIComponent(tokens.refreshToken)}`;
+        console.log(
+          'Mobile redirect URL:',
+          mobileRedirectUrl
+            .replace(/accessToken=[^&]+/, 'accessToken=***')
+            .replace(/refreshToken=[^&]+/, 'refreshToken=***'),
+        );
+        res.redirect(mobileRedirectUrl);
+        return;
+      }
+
+      // 명확한 웹 요청인 경우에만 웹으로 리다이렉트
+      console.log('Web request detected - redirecting to frontend');
+      // 웹의 경우 쿠키 설정 및 리다이렉트
+      const accessCookieOptions = {
+        maxAge: 1000 * 60 * 15, // 15분
+        secure: isProduction, // HTTPS에서만
+        sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax', // Cross-origin 허용
+        path: '/',
+      };
+
+      const refreshCookieOptions = {
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7일
+        secure: isProduction,
+        sameSite: (isProduction ? 'none' : 'lax') as 'none' | 'lax',
+        httpOnly: true, // XSS 방지
+        path: '/',
+      };
+
+      res.cookie('access_token', tokens.accessToken, accessCookieOptions);
+      res.cookie('refresh_token', tokens.refreshToken, refreshCookieOptions);
+
+      res.redirect(process.env.FRONTEND_URL || 'http://localhost:3000');
+    } catch (error) {
+      console.error('Google callback error:', error);
+      throw error;
+    }
   }
 
   @Post('signup')
-  signUp(@Body() signUpDto: SignUpDto) {
-    return this.authService.signUp(signUpDto);
+  async signUp(@Body() signUpDto: SignUpDto) {
+    try {
+      const tokens = await this.authService.signUp(signUpDto);
+
+      // 모바일 앱을 위해 JSON으로도 토큰 반환 (회원가입 후 자동 로그인)
+      return {
+        message: '회원가입 성공',
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   @Post('signin')

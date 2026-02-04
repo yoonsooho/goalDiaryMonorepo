@@ -18,7 +18,7 @@ export function DropdownMenuDialog({
     className,
     useDropdownIcon = true,
 }: {
-    title: string;
+    title: string | React.ReactNode;
     dropdownItemsList: { label: string; onClick: () => void }[];
     className?: string;
     useDropdownIcon?: boolean;

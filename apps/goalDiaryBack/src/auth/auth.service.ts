@@ -22,13 +22,17 @@ export class AuthService {
   // signUp
   async signUp(data: SignUpDto): Promise<any> {
     // user exists?
-
     const existUser = await this.usersService.findByUserId(data.userId);
 
     if (existUser) {
       throw new BadRequestException(
         `${data.userId}로 이미 가입된 계정이 있습니다.`,
       );
+    }
+
+    // password validation
+    if (!data.password) {
+      throw new BadRequestException('비밀번호를 입력해주세요.');
     }
 
     // password encryption

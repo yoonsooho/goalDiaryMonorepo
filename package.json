@@ -14,6 +14,12 @@
         "prettier": "latest",
         "turbo": "latest"
     },
+    "pnpm": {
+        "overrides": {
+            "@types/react": "18.3.12",
+            "@types/react-dom": "18.3.1"
+        }
+    },
     "packageManager": "pnpm@9.0.0",
     "engines": {
         "node": ">=18"
