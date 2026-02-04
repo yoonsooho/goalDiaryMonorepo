@@ -76,11 +76,22 @@ export class AuthController {
 
       // 기본적으로 모든 요청을 모바일로 처리
       // 명확한 웹 요청이고 모바일 플래그가 없을 때만 웹으로 처리
-      // 로컬 개발 환경에서는 무조건 모바일로 처리 (Render 서버가 업데이트되지 않았을 수 있음)
-      const isMobile =
-        process.env.NODE_ENV !== 'production' || // 개발 환경이면 무조건 모바일
-        !isDefinitelyWebRequest ||
-        hasMobileFlag;
+      // Google OAuth 콜백은 기본적으로 모바일로 처리 (Referer가 Google이거나 없을 수 있음)
+      // state 파라미터가 'mobile'이면 무조건 모바일로 처리
+      let isMobile =
+        state === 'mobile' || // state 파라미터가 가장 확실한 방법
+        hasMobileFlag ||
+        !isDefinitelyWebRequest; // 명확한 웹 요청이 아니면 모바일로 처리
+
+      // 프로덕션 환경에서도 Referer가 없거나 Google/onrender.com이면 모바일로 처리
+      if (
+        !isMobile &&
+        (!referer ||
+          referer.includes('google.com') ||
+          referer.includes('onrender.com'))
+      ) {
+        isMobile = true;
+      }
 
       // 쿠키 삭제 (사용 후 정리)
       if (mobileCookie) {
@@ -92,6 +103,7 @@ export class AuthController {
         mobileCookie,
         mobileQuery,
         state,
+        allQueryParams: req.query, // 모든 쿼리 파라미터 로깅
         userAgent: userAgent.substring(0, 100),
         reqUserIsMobile: req.user?.isMobile,
         hasMobileFlag,
@@ -113,17 +125,17 @@ export class AuthController {
         return;
       }
 
-      // 추가 안전장치: Referer가 없거나 Google/onrender.com이면 무조건 모바일로 처리
-      // 로컬 개발 환경에서는 기본적으로 모바일로 처리
+      // 추가 안전장치: Referer가 없거나 Google/onrender.com이면 모바일로 처리
+      // 단, 명확한 웹 요청(localhost:3000 또는 goaldiary.vercel.app)은 제외
       if (
         !isMobile &&
+        !isDefinitelyWebRequest && // 명확한 웹 요청이 아닐 때만
         (!referer ||
           referer.includes('google.com') ||
-          referer.includes('onrender.com') ||
-          process.env.NODE_ENV !== 'production')
+          referer.includes('onrender.com'))
       ) {
         console.warn(
-          'Referer indicates mobile request or local dev - forcing mobile redirect',
+          'Referer indicates mobile request - forcing mobile redirect',
         );
         const mobileRedirectUrl = `goaldiary://auth/callback?accessToken=${encodeURIComponent(tokens.accessToken)}&refreshToken=${encodeURIComponent(tokens.refreshToken)}`;
         res.redirect(mobileRedirectUrl);
@@ -150,7 +162,43 @@ export class AuthController {
             .replace(/accessToken=[^&]+/, 'accessToken=***')
             .replace(/refreshToken=[^&]+/, 'refreshToken=***'),
         );
-        res.redirect(mobileRedirectUrl);
+
+        // WebView에서 딥링크를 감지할 수 있도록 HTML 페이지로 리다이렉트
+        // WebView는 HTTP 리다이렉트를 딥링크로 처리하지 못하므로 HTML로 감싸서 전달
+        // ReactNativeWebView.postMessage를 사용하여 토큰 전달
+        res.send(`
+          <!DOCTYPE html>
+          <html>
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>로그인 완료</title>
+            </head>
+            <body>
+              <p>로그인 중...</p>
+              <script>
+                // ReactNativeWebView가 있는 경우 (WebView 내부)
+                if (window.ReactNativeWebView) {
+                  // 토큰을 메시지로 전달
+                  window.ReactNativeWebView.postMessage(JSON.stringify({
+                    type: 'GOOGLE_LOGIN_SUCCESS',
+                    accessToken: "${tokens.accessToken}",
+                    refreshToken: "${tokens.refreshToken}",
+                    redirectUrl: "${mobileRedirectUrl}"
+                  }));
+                  
+                  // 딥링크로도 리다이렉트 시도
+                  setTimeout(function() {
+                    window.location.href = "${mobileRedirectUrl}";
+                  }, 500);
+                } else {
+                  // 일반 브라우저인 경우 딥링크로 리다이렉트
+                  window.location.href = "${mobileRedirectUrl}";
+                }
+              </script>
+            </body>
+          </html>
+        `);
         return;
       }
 
@@ -304,8 +352,11 @@ export class AuthController {
     res.cookie('access_token', tokens.accessToken, accessCookieOptions);
     res.cookie('refresh_token', tokens.refreshToken, refreshCookieOptions);
 
+    // 모바일 앱을 위해 JSON으로도 토큰 반환
     return {
       message: '토큰 갱신 성공',
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
     };
   }
 

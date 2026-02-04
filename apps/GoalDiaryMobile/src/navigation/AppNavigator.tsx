@@ -10,10 +10,13 @@ import CreateRoutineScreen from "../screens/CreateRoutineScreen";
 import DiaryDetailScreen from "../screens/DiaryDetailScreen";
 import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
-
 const Stack = createNativeStackNavigator();
 
-export default function AppNavigator() {
+interface AppNavigatorProps {
+    initialRouteName?: "Login" | "MainTabs";
+}
+
+export default function AppNavigator({ initialRouteName = "Login" }: AppNavigatorProps) {
     const [isReady, setIsReady] = useState(false);
 
     useEffect(() => {
@@ -32,6 +35,7 @@ export default function AppNavigator() {
     return (
         <NavigationContainer>
             <Stack.Navigator
+                initialRouteName={initialRouteName}
                 screenOptions={{
                     headerShown: Boolean(true),
                     gestureEnabled: Boolean(true),

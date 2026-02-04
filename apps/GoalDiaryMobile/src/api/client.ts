@@ -1,12 +1,15 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// 개발 환경: 로컬 백엔드 사용 (로컬 네트워크 IP)
-// 프로덕션: Render 서버 사용
-// Google OAuth는 IP 주소를 허용하지 않으므로 Google 로그인만 Render 서버 사용
-const API_BASE_URL = __DEV__
-    ? "http://172.30.1.55:3001" // 로컬 네트워크 IP (실제 디바이스에서 접근 가능)
-    : "https://tododndback.onrender.com";
+// 개발/프로덕션 모두 Render 서버 사용
+const API_BASE_URL = "https://tododndback.onrender.com";
+
+const RENDER_API_URL = "https://tododndback.onrender.com";
+
+// 토큰 재발급은 항상 Render 서버 사용
+const getTokenRefreshUrl = async (): Promise<string> => {
+    return RENDER_API_URL;
+};
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -33,17 +36,31 @@ apiClient.interceptors.response.use(
 
             try {
                 const refreshToken = await AsyncStorage.getItem("refreshToken");
-                const response = await axios.post(`${API_BASE_URL}/auth/refresh-token`, {
-                    refreshToken,
+                if (!refreshToken) {
+                    await AsyncStorage.multiRemove(["accessToken", "refreshToken", "tokenSource"]);
+                    return Promise.reject(new Error("No refresh token"));
+                }
+
+                // 토큰이 어디서 발급되었는지 확인하여 같은 서버로 재발급 요청
+                const refreshUrl = await getTokenRefreshUrl();
+                const response = await axios.get(`${refreshUrl}/auth/refresh`, {
+                    headers: {
+                        Authorization: `Bearer ${refreshToken}`,
+                    },
                 });
 
-                const { accessToken } = response.data;
-                await AsyncStorage.setItem("accessToken", accessToken);
+                const { accessToken, refreshToken: newRefreshToken } = response.data;
+                if (accessToken) {
+                    await AsyncStorage.setItem("accessToken", accessToken);
+                    if (newRefreshToken) {
+                        await AsyncStorage.setItem("refreshToken", newRefreshToken);
+                    }
+                }
 
                 originalRequest.headers.Authorization = `Bearer ${accessToken}`;
                 return apiClient(originalRequest);
             } catch (refreshError) {
-                await AsyncStorage.multiRemove(["accessToken", "refreshToken"]);
+                await AsyncStorage.multiRemove(["accessToken", "refreshToken", "tokenSource"]);
                 return Promise.reject(refreshError);
             }
         }

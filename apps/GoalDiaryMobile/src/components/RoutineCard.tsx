@@ -17,13 +17,13 @@ export default function RoutineCard({ routine }: RoutineCardProps) {
         <TouchableOpacity style={[styles.card, routine.isActive ? styles.activeCard : styles.inactiveCard]}>
             <View style={styles.header}>
                 <Text style={styles.title} numberOfLines={2}>
-                    {routine.title}
+                    {String(routine.title || '')}
                 </Text>
                 {routine.isActive && <MaterialIcons name="power" size={20} color="#10b981" />}
             </View>
             {routine.description && (
                 <Text style={styles.description} numberOfLines={2}>
-                    {routine.description}
+                    {String(routine.description)}
                 </Text>
             )}
             {routine.streak && routine.streak > 0 && (

@@ -62,15 +62,17 @@ export default function RegisterScreen() {
             const refreshToken = response.data?.refreshToken || response.data?.refresh_token;
 
             if (accessToken && refreshToken) {
+                // 개발/프로덕션 모두 Render 서버 사용
                 await AsyncStorage.multiSet([
                     ["accessToken", accessToken],
                     ["refreshToken", refreshToken],
+                    ["tokenSource", "render"], // 토큰 소스 저장
                 ]);
 
                 Alert.alert("회원가입 성공", "회원가입이 완료되었습니다.", [
                     {
                         text: "확인",
-                        onPress: () => navigation.navigate("MainTabs"),
+                        onPress: () => navigation.replace("MainTabs"),
                     },
                 ]);
             } else {

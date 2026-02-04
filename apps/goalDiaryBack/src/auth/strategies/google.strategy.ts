@@ -17,13 +17,15 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     }
 
     // Google OAuth는 IP 주소와 localhost를 허용하지 않으므로 유효한 도메인만 사용 가능
-    // 모바일 앱 개발 시에도 실제 도메인(Render 서버)을 사용해야 함
-    // 개발 환경에서도 Render 서버의 도메인 사용 (localhost는 모바일에서 접근 불가)
-    const defaultCallbackURL = process.env.BACKEND_URL
-      ? `${process.env.BACKEND_URL}/auth/google/callback`
-      : process.env.NODE_ENV === 'production'
-        ? 'https://tododndback.onrender.com/auth/google/callback'
-        : 'https://tododndback.onrender.com/auth/google/callback'; // 개발 환경에서도 Render 서버 사용
+    // 로컬 개발 시 ngrok URL 사용 가능 (물리 기기에서 로컬 백엔드 테스트)
+    // 환경 변수 우선순위: GOOGLE_CALLBACK_URL > BACKEND_URL > 기본값
+    const defaultCallbackURL = process.env.GOOGLE_CALLBACK_URL
+      ? process.env.GOOGLE_CALLBACK_URL
+      : process.env.BACKEND_URL
+        ? `${process.env.BACKEND_URL}/auth/google/callback`
+        : process.env.NODE_ENV === 'production'
+          ? 'https://tododndback.onrender.com/auth/google/callback'
+          : 'https://tododndback.onrender.com/auth/google/callback'; // 개발 환경 기본값
 
     super({
       clientID: clientID || 'dummy', // 에러 방지를 위한 더미 값

@@ -18,7 +18,7 @@ export default function SettingsScreen() {
                 text: "로그아웃",
                 style: "destructive",
                 onPress: async () => {
-                    await AsyncStorage.multiRemove(["accessToken", "refreshToken"]);
+                    await AsyncStorage.multiRemove(["accessToken", "refreshToken", "tokenSource"]);
                     navigation.navigate("Login");
                 },
             },

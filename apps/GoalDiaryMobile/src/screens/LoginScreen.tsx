@@ -9,28 +9,20 @@ import {
     ActivityIndicator,
     ScrollView,
     Linking,
+    Platform,
+    Modal,
 } from "react-native";
+import { WebView } from "react-native-webview";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as WebBrowser from "expo-web-browser";
-import { Platform } from "react-native";
 import apiClient from "../api/client";
 import { RootStackParamList } from "../types/navigation";
 
-// WebBrowser 완료 후 세션 정리
-WebBrowser.maybeCompleteAuthSession();
-
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-// 개발 환경: 로컬 백엔드 사용
-// 프로덕션: Render 서버 사용
-// Google OAuth는 IP 주소를 허용하지 않으므로 Google 로그인만 Render 서버 사용
-const API_BASE_URL = __DEV__
-    ? "http://172.30.1.55:3001" // 로컬 네트워크 IP
-    : "https://tododndback.onrender.com";
-
-// Google OAuth는 IP 주소를 허용하지 않으므로 항상 Render 서버 사용
+// 개발/프로덕션 모두 Render 서버 사용
+const API_BASE_URL = "https://tododndback.onrender.com";
 const GOOGLE_OAUTH_BASE_URL = "https://tododndback.onrender.com";
 
 export default function LoginScreen() {
@@ -39,10 +31,16 @@ export default function LoginScreen() {
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+    const [showWebView, setShowWebView] = useState(false);
+    const [webViewUrl, setWebViewUrl] = useState("");
 
     // 딥링크 리스너 추가 (dismiss 타입 처리용)
     useEffect(() => {
-        const handleDeepLink = async (url: string) => {
+        const handleDeepLink = async (url: string | null) => {
+            if (!url) return;
+
+            console.log("Deep link received:", url);
+
             if (url.startsWith("goaldiary://auth/callback")) {
                 try {
                     const urlString = String(url);
@@ -67,12 +65,14 @@ export default function LoginScreen() {
                     const refreshToken = refreshTokenParam ? decodeURIComponent(refreshTokenParam) : null;
 
                     if (accessToken && refreshToken) {
+                        // 개발/프로덕션 모두 Render 서버 사용
                         await AsyncStorage.multiSet([
                             ["accessToken", accessToken],
                             ["refreshToken", refreshToken],
+                            ["tokenSource", "render"], // 토큰 소스 저장
                         ]);
                         setIsGoogleLoading(false);
-                        navigation.navigate("MainTabs");
+                        navigation.replace("MainTabs");
                     }
                 } catch (error: any) {
                     console.error("Deep link processing error:", error);
@@ -124,12 +124,14 @@ export default function LoginScreen() {
                 return;
             }
 
+            // 개발/프로덕션 모두 Render 서버 사용
             await AsyncStorage.multiSet([
                 ["accessToken", accessToken],
                 ["refreshToken", refreshToken],
+                ["tokenSource", "render"], // 토큰 소스 저장
             ]);
 
-            navigation.navigate("MainTabs");
+            navigation.replace("MainTabs");
         } catch (error: any) {
             console.error("Login error:", error);
             console.error("Error response:", error.response?.data);
@@ -145,99 +147,95 @@ export default function LoginScreen() {
         try {
             // 모바일 요청임을 표시하기 위해 쿼리 파라미터 추가
             // Google OAuth는 IP 주소를 허용하지 않으므로 Render 서버 사용
-            const googleAuthUrl = `${GOOGLE_OAUTH_BASE_URL}/auth/google?mobile=true`;
-            const redirectUrl = `goaldiary://auth/callback`;
+            // state 파라미터도 추가하여 OAuth 플로우에서 모바일 정보 유지
+            const googleAuthUrl = `${GOOGLE_OAUTH_BASE_URL}/auth/google?mobile=true&state=mobile`;
 
-            const result = await WebBrowser.openAuthSessionAsync(googleAuthUrl, redirectUrl);
+            console.log("Opening Google login in WebView:", googleAuthUrl);
 
-            console.log("Google login result:", JSON.stringify(result, null, 2));
-
-            if (result.type === "success") {
-                // result.url이 null이거나 undefined일 수 있으므로 체크
-                if (!result.url) {
-                    console.error("Result URL is null or undefined");
-                    Alert.alert("구글 로그인 실패", "리다이렉트 URL을 받을 수 없습니다.");
-                    return;
-                }
-
-                // 백엔드가 리다이렉트 URL에 토큰을 쿼리 파라미터로 포함시킴
-                try {
-                    // 딥링크 URL (goaldiary://)을 파싱하기 위해 URLSearchParams 사용
-                    const urlString = String(result.url);
-                    console.log("Google login callback URL:", urlString);
-
-                    // URL에서 쿼리 파라미터 추출
-                    if (!urlString.includes("?")) {
-                        console.error("URL does not contain query parameters:", urlString);
-                        Alert.alert("구글 로그인 실패", "토큰이 포함된 URL을 받지 못했습니다.");
-                        return;
-                    }
-
-                    const queryString = urlString.split("?")[1];
-                    if (!queryString) {
-                        console.error("Query string is empty");
-                        Alert.alert("구글 로그인 실패", "토큰 정보를 찾을 수 없습니다.");
-                        return;
-                    }
-
-                    const params = new URLSearchParams(queryString);
-
-                    // URL 디코딩된 토큰 가져오기
-                    const accessTokenParam = params.get("accessToken");
-                    const refreshTokenParam = params.get("refreshToken");
-
-                    const accessToken = accessTokenParam ? decodeURIComponent(accessTokenParam) : null;
-                    const refreshToken = refreshTokenParam ? decodeURIComponent(refreshTokenParam) : null;
-
-                    console.log("Extracted tokens:", {
-                        hasAccessToken: !!accessToken,
-                        hasRefreshToken: !!refreshToken,
-                        accessTokenLength: accessToken?.length || 0,
-                        refreshTokenLength: refreshToken?.length || 0,
-                    });
-
-                    if (accessToken && refreshToken) {
-                        await AsyncStorage.multiSet([
-                            ["accessToken", accessToken],
-                            ["refreshToken", refreshToken],
-                        ]);
-                        navigation.navigate("MainTabs");
-                    } else {
-                        console.error("Missing tokens in URL:", {
-                            url: urlString,
-                            hasAccessToken: !!accessToken,
-                            hasRefreshToken: !!refreshToken,
-                        });
-                        Alert.alert("구글 로그인 실패", "토큰을 받아올 수 없습니다.");
-                    }
-                } catch (urlError: any) {
-                    console.error("URL parsing error:", urlError);
-                    console.error("Error message:", urlError?.message);
-                    console.error("Failed URL:", result.url);
-                    Alert.alert(
-                        "구글 로그인 실패",
-                        `응답을 처리할 수 없습니다: ${urlError?.message || "알 수 없는 오류"}`
-                    );
-                }
-            } else if (result.type === "cancel") {
-                // 사용자가 취소 - 아무것도 하지 않음
-                console.log("Google login cancelled by user");
-            } else if (result.type === "dismiss") {
-                // dismiss는 딥링크로 리다이렉트될 때 발생할 수 있음
-                // 딥링크 리스너가 이미 처리했을 수 있으므로 조용히 처리
-                console.log("Google login dismissed - deep link may have been handled");
-                // 딥링크가 앱을 다시 열었을 수 있으므로 에러를 표시하지 않음
-                // 실제로는 딥링크 리스너에서 처리되어야 함
-            } else {
-                console.error("Google login failed:", result);
-                Alert.alert("구글 로그인 실패", `구글 로그인에 실패했습니다. (타입: ${result.type})`);
-            }
+            // WebView 모달을 열어서 Google OAuth 플로우 처리
+            setWebViewUrl(googleAuthUrl);
+            setShowWebView(true);
         } catch (error: any) {
             console.error("Google login error:", error);
             Alert.alert("구글 로그인 실패", error.message || "구글 로그인 중 오류가 발생했습니다.");
-        } finally {
             setIsGoogleLoading(false);
         }
+    };
+
+    // 토큰 추출 및 저장 함수
+    const extractAndSaveTokens = (accessToken: string, refreshToken: string) => {
+        if (!accessToken || !refreshToken) {
+            console.error("Tokens are missing");
+            Alert.alert("구글 로그인 실패", "토큰을 받아올 수 없습니다.");
+            setShowWebView(false);
+            setIsGoogleLoading(false);
+            return;
+        }
+
+        // Google 로그인은 Render 서버 사용
+        AsyncStorage.multiSet([
+            ["accessToken", accessToken],
+            ["refreshToken", refreshToken],
+            ["tokenSource", "render"], // 토큰 소스 저장
+        ])
+            .then(() => {
+                console.log("Tokens saved successfully");
+                setShowWebView(false);
+                setIsGoogleLoading(false);
+                navigation.replace("MainTabs");
+            })
+            .catch((error) => {
+                console.error("Error saving tokens:", error);
+                Alert.alert("구글 로그인 실패", "토큰 저장 중 오류가 발생했습니다.");
+                setShowWebView(false);
+                setIsGoogleLoading(false);
+            });
+    };
+
+    // WebView에서 URL 변경 감지하여 토큰 추출
+    const handleWebViewNavigationStateChange = (navState: any) => {
+        const { url } = navState;
+        console.log("WebView URL changed:", url);
+
+        // 딥링크로 리다이렉트된 경우 토큰 추출
+        if (url && url.startsWith("goaldiary://auth/callback")) {
+            console.log("Deep link detected in onNavigationStateChange");
+            try {
+                const urlString = String(url);
+                console.log("Deep link callback URL in WebView:", urlString);
+
+                if (!urlString.includes("?")) {
+                    console.error("URL does not contain query parameters:", urlString);
+                    return;
+                }
+
+                const queryString = urlString.split("?")[1];
+                if (!queryString) {
+                    console.error("Query string is empty");
+                    return;
+                }
+
+                const params = new URLSearchParams(queryString);
+                const accessTokenParam = params.get("accessToken");
+                const refreshTokenParam = params.get("refreshToken");
+
+                const accessToken = accessTokenParam ? decodeURIComponent(accessTokenParam) : null;
+                const refreshToken = refreshTokenParam ? decodeURIComponent(refreshTokenParam) : null;
+
+                extractAndSaveTokens(accessToken || "", refreshToken || "");
+            } catch (error: any) {
+                console.error("Error processing deep link in WebView:", error);
+                Alert.alert("구글 로그인 실패", error.message || "딥링크 처리 중 오류가 발생했습니다.");
+                setShowWebView(false);
+                setIsGoogleLoading(false);
+            }
+        }
+    };
+
+    // WebView 닫기
+    const handleCloseWebView = () => {
+        setShowWebView(false);
+        setIsGoogleLoading(false);
     };
 
     return (
@@ -295,6 +293,105 @@ export default function LoginScreen() {
                     <Text style={styles.registerButtonText}>회원가입</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Google 로그인 WebView 모달 */}
+            <Modal visible={showWebView} animationType="slide" transparent={false} onRequestClose={handleCloseWebView}>
+                <View style={styles.webViewContainer}>
+                    <View style={styles.webViewHeader}>
+                        <TouchableOpacity onPress={handleCloseWebView} style={styles.closeButton}>
+                            <Text style={styles.closeButtonText}>✕</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.webViewTitle}>Google 로그인</Text>
+                        <View style={styles.closeButtonPlaceholder} />
+                    </View>
+                    <WebView
+                        source={{ uri: webViewUrl }}
+                        onNavigationStateChange={handleWebViewNavigationStateChange}
+                        startInLoadingState={true}
+                        renderLoading={() => (
+                            <View style={styles.webViewLoading}>
+                                <ActivityIndicator size="large" color="#2563eb" />
+                            </View>
+                        )}
+                        // Google OAuth가 WebView를 차단하지 않도록 User-Agent를 일반 브라우저로 설정
+                        userAgent={
+                            Platform.OS === "ios"
+                                ? "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Mobile/15E148 Safari/604.1"
+                                : "Mozilla/5.0 (Linux; Android 10; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36"
+                        }
+                        // 딥링크를 감지하기 위해 shouldStartLoadWithRequest 사용
+                        onShouldStartLoadWithRequest={(request) => {
+                            const { url } = request;
+                            console.log("WebView should start load:", url);
+
+                            // 백엔드 콜백 URL에서 리다이렉트 URL 추출 시도
+                            if (url && url.includes("/auth/google/callback")) {
+                                console.log("Backend callback URL detected in onShouldStartLoadWithRequest");
+                                // 백엔드가 리다이렉트하는 딥링크를 기다리기 위해 잠시 대기
+                                // 실제로는 백엔드가 Location 헤더로 리다이렉트하므로
+                                // onNavigationStateChange에서 감지됨
+                            }
+
+                            // 딥링크로 리다이렉트된 경우 처리
+                            if (url && url.startsWith("goaldiary://auth/callback")) {
+                                console.log("Deep link detected in onShouldStartLoadWithRequest");
+                                handleWebViewNavigationStateChange({ url });
+                                return false; // 딥링크는 WebView에서 로드하지 않음
+                            }
+
+                            return true; // 일반 URL은 WebView에서 로드
+                        }}
+                        // 에러 처리
+                        onError={(syntheticEvent) => {
+                            const { nativeEvent } = syntheticEvent;
+                            console.error("WebView error:", nativeEvent);
+                            Alert.alert("오류", "페이지를 불러오는 중 오류가 발생했습니다.");
+                            setShowWebView(false);
+                            setIsGoogleLoading(false);
+                        }}
+                        // 로딩 완료 시 URL 확인 (추가 안전장치)
+                        onLoadEnd={(syntheticEvent) => {
+                            const { nativeEvent } = syntheticEvent;
+                            const url = nativeEvent.url;
+                            console.log("WebView load ended:", url);
+
+                            // 백엔드 콜백 URL에서 HTML을 파싱하여 리다이렉트 URL 추출
+                            if (url && url.includes("/auth/google/callback")) {
+                                console.log("Backend callback page loaded, injecting script to detect redirect");
+                                // WebView에서 JavaScript를 실행하여 리다이렉트 URL 추출
+                                // 백엔드가 Location 헤더로 리다이렉트하면 자동으로 감지됨
+                            }
+
+                            // 딥링크가 로드 완료 시점에 감지되지 않았을 경우 재확인
+                            if (url && url.startsWith("goaldiary://auth/callback")) {
+                                console.log("Deep link detected in onLoadEnd");
+                                handleWebViewNavigationStateChange({ url });
+                            }
+                        }}
+                        // JavaScript에서 메시지 수신 (백엔드 HTML에서 전송)
+                        onMessage={(event) => {
+                            try {
+                                const data = JSON.parse(event.nativeEvent.data);
+                                console.log("Message received from WebView:", data);
+
+                                if (data.type === "GOOGLE_LOGIN_SUCCESS") {
+                                    console.log("Google login success message received");
+                                    extractAndSaveTokens(data.accessToken, data.refreshToken);
+                                } else if (
+                                    data.type === "REDIRECT" &&
+                                    data.url &&
+                                    data.url.startsWith("goaldiary://auth/callback")
+                                ) {
+                                    console.log("Redirect URL detected from injected JavaScript:", data.url);
+                                    handleWebViewNavigationStateChange({ url: data.url });
+                                }
+                            } catch (error) {
+                                console.error("Error parsing message from WebView:", error);
+                            }
+                        }}
+                    />
+                </View>
+            </Modal>
         </ScrollView>
     );
 }
@@ -399,5 +496,48 @@ const styles = StyleSheet.create({
         color: "#2563eb",
         fontSize: 14,
         fontWeight: "600",
+    },
+    webViewContainer: {
+        flex: 1,
+        backgroundColor: "#fff",
+    },
+    webViewHeader: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: "#e5e7eb",
+        backgroundColor: "#fff",
+    },
+    closeButton: {
+        width: 40,
+        height: 40,
+        alignItems: "center",
+        justifyContent: "center",
+    },
+    closeButtonText: {
+        fontSize: 24,
+        color: "#6b7280",
+        fontWeight: "bold",
+    },
+    webViewTitle: {
+        fontSize: 18,
+        fontWeight: "600",
+        color: "#1f2937",
+    },
+    closeButtonPlaceholder: {
+        width: 40,
+    },
+    webViewLoading: {
+        position: "absolute",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#fff",
     },
 });
