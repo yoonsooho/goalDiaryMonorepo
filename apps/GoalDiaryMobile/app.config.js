@@ -18,17 +18,18 @@ module.exports = {
                 {
                     action: "VIEW",
                     autoVerify: true,
-                    data: [
-                        {
-                            scheme: "goaldiary",
-                        },
-                    ],
+                    data: [{ scheme: "goaldiary" }],
                     category: ["BROWSABLE", "DEFAULT"],
                 },
             ],
         },
         ios: {
             bundleIdentifier: "com.goaldiary.mobile",
+        },
+        extra: {
+            eas: {
+                projectId: "40b8987d-95b2-4156-88e2-264d86bd6a02",
+            },
         },
     },
 };

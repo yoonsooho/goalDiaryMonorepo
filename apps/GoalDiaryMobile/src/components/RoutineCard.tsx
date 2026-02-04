@@ -13,25 +13,34 @@ interface RoutineCardProps {
 }
 
 export default function RoutineCard({ routine }: RoutineCardProps) {
+    if (!routine) {
+        return null;
+    }
+
+    const title = routine.title ? String(routine.title) : '';
+    const description = routine.description ? String(routine.description) : '';
+    const isActive = Boolean(routine.isActive);
+    const streak = routine.streak ? Number(routine.streak) : 0;
+
     return (
-        <TouchableOpacity style={[styles.card, routine.isActive ? styles.activeCard : styles.inactiveCard]}>
+        <TouchableOpacity style={[styles.card, isActive ? styles.activeCard : styles.inactiveCard]}>
             <View style={styles.header}>
                 <Text style={styles.title} numberOfLines={2}>
-                    {String(routine.title || '')}
+                    {title}
                 </Text>
-                {routine.isActive && <MaterialIcons name="power" size={20} color="#10b981" />}
+                {isActive && <MaterialIcons name="power" size={20} color="#10b981" />}
             </View>
-            {routine.description && (
+            {description ? (
                 <Text style={styles.description} numberOfLines={2}>
-                    {String(routine.description)}
+                    {description}
                 </Text>
-            )}
-            {routine.streak && routine.streak > 0 && (
+            ) : null}
+            {streak > 0 ? (
                 <View style={styles.streakContainer}>
                     <MaterialIcons name="local-fire-department" size={16} color="#f97316" />
-                    <Text style={styles.streak}>{routine.streak}일</Text>
+                    <Text style={styles.streak}>{streak}일</Text>
                 </View>
-            )}
+            ) : null}
         </TouchableOpacity>
     );
 }

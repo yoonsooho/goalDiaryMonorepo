@@ -1,5 +1,13 @@
-import React from "react";
-import { View, FlatList, TouchableOpacity, Text, StyleSheet, ActivityIndicator } from "react-native";
+import React, { useCallback, useState } from "react";
+import {
+    View,
+    FlatList,
+    TouchableOpacity,
+    Text,
+    StyleSheet,
+    ActivityIndicator,
+    RefreshControl,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useGetSchedules } from "../hooks/api/useSchedules";
@@ -9,7 +17,17 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function SchedulesScreen() {
     const navigation = useNavigation<NavigationProp>();
-    const { data: schedules, isLoading } = useGetSchedules();
+    const { data: schedules, isLoading, isRefetching, refetch } = useGetSchedules();
+    const [refreshing, setRefreshing] = useState(false);
+
+    const handleRefresh = useCallback(async () => {
+        setRefreshing(true);
+        try {
+            await refetch();
+        } finally {
+            setRefreshing(false);
+        }
+    }, [refetch]);
 
     if (isLoading) {
         return (
@@ -23,6 +41,9 @@ export default function SchedulesScreen() {
         <View style={styles.container}>
             <FlatList
                 data={schedules || []}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing || isRefetching} onRefresh={handleRefresh} />
+                }
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
                     <TouchableOpacity

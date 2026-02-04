@@ -1,15 +1,7 @@
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// 개발/프로덕션 모두 Render 서버 사용
 const API_BASE_URL = "https://tododndback.onrender.com";
-
-const RENDER_API_URL = "https://tododndback.onrender.com";
-
-// 토큰 재발급은 항상 Render 서버 사용
-const getTokenRefreshUrl = async (): Promise<string> => {
-    return RENDER_API_URL;
-};
 
 const apiClient = axios.create({
     baseURL: API_BASE_URL,
@@ -41,9 +33,7 @@ apiClient.interceptors.response.use(
                     return Promise.reject(new Error("No refresh token"));
                 }
 
-                // 토큰이 어디서 발급되었는지 확인하여 같은 서버로 재발급 요청
-                const refreshUrl = await getTokenRefreshUrl();
-                const response = await axios.get(`${refreshUrl}/auth/refresh`, {
+                const response = await axios.get(`${API_BASE_URL}/auth/refresh`, {
                     headers: {
                         Authorization: `Bearer ${refreshToken}`,
                     },

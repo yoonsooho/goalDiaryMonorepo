@@ -1,10 +1,20 @@
-import React from 'react';
-import { View, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { View, ScrollView, StyleSheet, ActivityIndicator, RefreshControl } from 'react-native';
 import { useGetQuotes } from '../hooks/api/useQuotes';
 import QuoteCard from '../components/QuoteCard';
 
 export default function QuotesScreen() {
-    const { data: quotes = [], isLoading } = useGetQuotes();
+    const { data: quotes = [], isLoading, isRefetching, refetch } = useGetQuotes();
+    const [refreshing, setRefreshing] = useState(false);
+
+    const handleRefresh = useCallback(async () => {
+        setRefreshing(true);
+        try {
+            await refetch();
+        } finally {
+            setRefreshing(false);
+        }
+    }, [refetch]);
     const slots = Array(3)
         .fill(null)
         .map((_, i) => quotes[i] || null);
@@ -18,7 +28,13 @@ export default function QuotesScreen() {
     }
 
     return (
-        <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+        <ScrollView
+            style={styles.container}
+            contentContainerStyle={styles.content}
+            refreshControl={
+                <RefreshControl refreshing={refreshing || isRefetching} onRefresh={handleRefresh} />
+            }
+        >
             {slots.map((quote, index) => (
                 <QuoteCard key={quote?.id || `empty-${index}`} quote={quote} index={index} />
             ))}

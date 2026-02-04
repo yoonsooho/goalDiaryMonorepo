@@ -62,11 +62,10 @@ export default function RegisterScreen() {
             const refreshToken = response.data?.refreshToken || response.data?.refresh_token;
 
             if (accessToken && refreshToken) {
-                // 개발/프로덕션 모두 Render 서버 사용
                 await AsyncStorage.multiSet([
                     ["accessToken", accessToken],
                     ["refreshToken", refreshToken],
-                    ["tokenSource", "render"], // 토큰 소스 저장
+                    ["tokenSource", "render"],
                 ]);
 
                 Alert.alert("회원가입 성공", "회원가입이 완료되었습니다.", [
@@ -76,7 +75,6 @@ export default function RegisterScreen() {
                     },
                 ]);
             } else {
-                // 회원가입은 성공했지만 토큰이 없는 경우 (백엔드가 자동 로그인하지 않는 경우)
                 Alert.alert("회원가입 성공", "회원가입이 완료되었습니다. 로그인해주세요.", [
                     {
                         text: "확인",
