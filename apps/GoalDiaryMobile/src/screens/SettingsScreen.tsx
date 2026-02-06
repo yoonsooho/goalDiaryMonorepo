@@ -15,6 +15,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialIcons } from "@expo/vector-icons";
 import { RootStackParamList } from "../types/navigation";
 import { useCurrentUser } from "../hooks/useCurrentUser";
+import apiClient from "../api/client";
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -39,8 +40,37 @@ export default function SettingsScreen() {
                 text: "로그아웃",
                 style: "destructive",
                 onPress: async () => {
-                    await AsyncStorage.multiRemove(["accessToken", "refreshToken", "tokenSource"]);
-                    navigation.navigate("Login");
+                    try {
+                        // refreshToken을 읽어서 백엔드에 전송 (특정 기기만 로그아웃)
+                        const refreshToken = await AsyncStorage.getItem("refreshToken");
+
+                        if (!refreshToken) {
+                            // refreshToken이 없으면 이미 로그아웃된 상태이거나 토큰이 손실된 상태
+                            // 로컬 토큰만 삭제하고 로그인 화면으로 이동
+                            await AsyncStorage.multiRemove(["accessToken", "refreshToken", "tokenSource"]);
+                            navigation.navigate("Login");
+                            return;
+                        }
+
+                        // refreshToken이 있으면 백엔드에 전송하여 특정 기기만 로그아웃
+                        // 백엔드 호출이 실패해도 로컬 토큰은 삭제 (네트워크 오류 등 대비)
+                        try {
+                            await apiClient.post("/auth/signout", {
+                                refreshToken: refreshToken,
+                            });
+                        } catch (error) {
+                            // 백엔드 호출 실패해도 로컬 토큰은 삭제하고 로그인 화면으로 이동
+                            // (백엔드에서 refreshToken이 없으면 아무것도 하지 않으므로 안전)
+                            console.error("로그아웃 API 호출 실패:", error);
+                        }
+
+                        // 성공적으로 로그아웃되면 로컬 스토리지에서 토큰 삭제
+                        await AsyncStorage.multiRemove(["accessToken", "refreshToken", "tokenSource"]);
+                        navigation.navigate("Login");
+                    } catch (error) {
+                        console.error("로그아웃 중 오류:", error);
+                        Alert.alert("로그아웃 실패", "로그아웃 중 오류가 발생했습니다.");
+                    }
                 },
             },
         ]);

@@ -157,9 +157,19 @@ export class AuthController {
 
   @UseGuards(AccessTokenGuard)
   @Post('signout')
-  signOut(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+  signOut(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Body() body?: { refreshToken?: string },
+  ) {
     const userId = req.user['sub'];
-    this.authService.signOut(userId);
+
+    // Request body에서 refreshToken을 받거나, 쿠키에서 읽기 (웹의 경우)
+    const refreshToken = body?.refreshToken || req.cookies?.refresh_token;
+
+    // refreshToken이 있으면 특정 기기만 로그아웃 (해당 토큰만 삭제)
+    // refreshToken이 없으면 백엔드에서 아무것도 하지 않음 (전체 기기 로그아웃 방지)
+    this.authService.signOut(userId, refreshToken);
     const isProduction = process.env.NODE_ENV === 'production';
 
     res.cookie('access_token', '', {

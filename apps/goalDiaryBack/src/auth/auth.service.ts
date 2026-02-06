@@ -10,6 +10,9 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import * as argon2 from 'argon2';
 import { User } from 'src/users/users.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository, MoreThan, LessThan } from 'typeorm';
+import { UserRefreshToken } from './entities/user-refresh-token.entity';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +20,8 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    @InjectRepository(UserRefreshToken)
+    private readonly refreshTokenRepo: Repository<UserRefreshToken>,
   ) {}
 
   // signUp
@@ -107,28 +112,84 @@ export class AuthService {
     return tokens;
   }
 
-  async signOut(userId: string) {
-    await this.usersService.update(userId, {
-      refreshToken: null,
+  async signOut(userId: string, refreshToken?: string) {
+    // refreshToken이 없으면 특정 기기를 식별할 수 없으므로 아무것도 하지 않음
+    // (전체 기기 로그아웃 방지 - 클라이언트는 로컬 토큰만 삭제)
+    if (!refreshToken) {
+      return;
+    }
+
+    // 특정 기기만 로그아웃: 해당 refresh token과 일치하는 row만 삭제
+    const now = new Date();
+    const activeTokens = await this.refreshTokenRepo.find({
+      where: {
+        user: { id: userId } as User,
+        expiresAt: MoreThan(now),
+      },
     });
+
+    for (const tokenEntity of activeTokens) {
+      const isMatch = await argon2.verify(tokenEntity.tokenHash, refreshToken);
+      if (isMatch) {
+        await this.refreshTokenRepo.delete({ id: tokenEntity.id });
+        return;
+      }
+    }
+
+    // 일치하는 토큰이 없으면 이미 삭제되었거나 만료된 토큰이므로 정상 처리
+    // (사용자가 이미 로그아웃된 상태일 수 있음)
   }
 
   async refreshAllTokens(userId: string, refreshToken: string) {
     const user = await this.usersService.findById(userId);
-    if (!user || !user.refreshToken) {
+    if (!user) {
+      throw new ForbiddenException('사용자를 찾을 수 없습니다.');
+    }
+
+    // 1) 해당 유저의 활성화된(만료되지 않은) 토큰들 조회
+    const now = new Date();
+    const activeTokens = await this.refreshTokenRepo.find({
+      where: {
+        user: { id: userId } as User,
+        expiresAt: MoreThan(now),
+      },
+      relations: ['user'],
+    });
+
+    if (!activeTokens || activeTokens.length === 0) {
       throw new ForbiddenException('refresh token이 존재하지 않습니다.');
     }
 
-    const isRefreshTokenMatched = await argon2.verify(
-      user.refreshToken,
-      refreshToken,
-    );
-    if (!isRefreshTokenMatched) {
+    // 2) 전달된 refreshToken과 해시가 일치하는 토큰 찾기
+    let matchedToken: UserRefreshToken | null = null;
+    for (const tokenEntity of activeTokens) {
+      const isMatch = await argon2.verify(tokenEntity.tokenHash, refreshToken);
+      if (isMatch) {
+        matchedToken = tokenEntity;
+        break;
+      }
+    }
+
+    if (!matchedToken) {
       throw new ForbiddenException('refresh token이 일치하지 않습니다.');
     }
 
+    // 3) 새 토큰 발급 (로테이션)
     const tokens = await this.getTokens(user);
-    await this.updateRefreshToken(user.id, tokens.refreshToken);
+
+    // 4) 기존 row에 새 refresh 토큰 해시와 만료 시간 업데이트 (기기별 1개 유지)
+    const newHashed = await this.hashFn(tokens.refreshToken);
+    const newExpiresAt = new Date();
+    newExpiresAt.setDate(newExpiresAt.getDate() + 7); // 7일 유효
+
+    matchedToken.tokenHash = newHashed;
+    matchedToken.expiresAt = newExpiresAt;
+    await this.refreshTokenRepo.save(matchedToken);
+
+    // 5) 만료된 토큰 정리 (백그라운드에서 실행, 에러가 나도 메인 플로우에 영향 없음)
+    this.cleanupExpiredTokens().catch((error) => {
+      console.error('만료된 토큰 정리 중 오류:', error);
+    });
 
     return tokens;
   }
@@ -137,11 +198,31 @@ export class AuthService {
     return argon2.hash(data);
   }
 
+  /**
+   * 만료된 refresh token을 정리하는 메서드
+   * refreshAllTokens 호출 시마다 백그라운드에서 실행
+   */
+  private async cleanupExpiredTokens(): Promise<void> {
+    const now = new Date();
+    await this.refreshTokenRepo.delete({
+      expiresAt: LessThan(now),
+    });
+  }
+
   private async updateRefreshToken(userId: string, refreshToken: string) {
     const hashedRefreshToken = await this.hashFn(refreshToken);
-    await this.usersService.update(userId, {
-      refreshToken: hashedRefreshToken,
+
+    const expiresAt = new Date();
+    // refresh 토큰 만료 시간: 현재 + 7일
+    expiresAt.setDate(expiresAt.getDate() + 7);
+
+    const tokenEntity = this.refreshTokenRepo.create({
+      user: { id: userId } as User,
+      tokenHash: hashedRefreshToken,
+      expiresAt,
     });
+
+    await this.refreshTokenRepo.save(tokenEntity);
   }
 
   private async getTokens(user: User): Promise<{

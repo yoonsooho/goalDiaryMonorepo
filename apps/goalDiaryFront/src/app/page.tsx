@@ -34,13 +34,9 @@ export default function Home() {
             name: "GoalDiary Team",
             url: "https://goaldiary.vercel.app",
         },
-        aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: "4.8",
-            ratingCount: "150",
-            bestRating: "5",
-            worstRating: "1",
-        },
+        // aggregateRating은 실제 사용자 리뷰 데이터가 있을 때만 사용해야 함
+        // 현재는 리뷰 시스템이 없으므로 제거
+        // 향후 리뷰 시스템 구축 시 실제 데이터로 교체 필요
         keywords: "목표관리, 일정관리, BIG3, 우선순위, 일기앱, 개인성장, 팀협업, 작업일지, 생산성",
     };
 
@@ -79,7 +75,9 @@ export default function Home() {
                                             </div>
                                         </div>
                                         <div>
-                                            <h3 className="text-sm sm:text-base font-semibold text-gray-900">기존 일정 앱과의 차이점</h3>
+                                            <h3 className="text-sm sm:text-base font-semibold text-gray-900">
+                                                기존 일정 앱과의 차이점
+                                            </h3>
                                             <p className="mt-1 sm:mt-2 text-gray-600 text-xs sm:text-sm">
                                                 하루에 해야 할 일이 많을 때, 무엇이 진짜 중요한지 한눈에 안 보였나요?
                                                 GoalDiary는{" "}
