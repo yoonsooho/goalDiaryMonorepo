@@ -14,6 +14,8 @@ import ScheduleList from "@/app/components/main/ScheduleList";
 import RoutineList from "@/app/components/main/RoutineList";
 import RoutineProgressBar from "@/app/components/main/RoutineProgressBar";
 import QuoteSection from "@/app/components/main/QuoteSection";
+import TodaySummary from "@/app/components/main/TodaySummary";
+import QuickAddSchedule from "@/app/components/main/QuickAddSchedule";
 
 const Main = () => {
     const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
@@ -81,24 +83,8 @@ const Main = () => {
                     {/* 명언 섹션 */}
                     <QuoteSection />
 
-                    {/* 액션 버튼들 */}
-                    <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
-                        <Button
-                            onClick={() => setIsScheduleModalOpen(true)}
-                            className="flex items-center justify-center gap-2 w-full sm:w-auto"
-                        >
-                            <PlusIcon className="h-4 w-4" />
-                            <span className="text-sm sm:text-base">새 일정 만들기</span>
-                        </Button>
-                        <Button
-                            onClick={() => setIsRoutineModalOpen(true)}
-                            variant="outline"
-                            className="flex items-center justify-center gap-2 w-full sm:w-auto"
-                        >
-                            <PlusIcon className="h-4 w-4" />
-                            <span className="text-sm sm:text-base">새 루틴 만들기</span>
-                        </Button>
-                    </div>
+                    {/* 오늘 요약 */}
+                    <TodaySummary />
                 </div>
 
                 <CreateScheduleModal
@@ -113,30 +99,42 @@ const Main = () => {
                     onSubmit={handleCreateRoutine}
                 />
 
-                {/* 콘텐츠 영역 - 두 섹션을 나란히 배치 */}
+                {/* 일정 / 루틴 두 칸으로 구분 */}
                 <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid gap-8 lg:grid-cols-2">
                         {/* 일정 섹션 */}
-                        <div>
-                            <div className="flex items-center gap-2 mb-4">
-                                <Calendar className="h-5 w-5 text-blue-600" />
-                                <h2 className="text-xl font-semibold text-gray-900">일정</h2>
+                        <section className="flex flex-col" aria-labelledby="schedule-heading">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Calendar className="h-5 w-5 text-blue-600" aria-hidden />
+                                <h2 id="schedule-heading" className="text-xl font-semibold text-gray-900">
+                                    일정
+                                </h2>
                             </div>
-                            <ScheduleList />
-                        </div>
+                            <p className="text-sm text-gray-500 mb-4">할 일을 등록하고 관리해요</p>
+                            <QuickAddSchedule onOpenFullModal={() => setIsScheduleModalOpen(true)} />
+                            <ScheduleList onAddClick={() => setIsScheduleModalOpen(true)} />
+                        </section>
 
                         {/* 루틴 섹션 */}
-                        <div>
-                            <div className="flex items-center gap-2 mb-4">
-                                <RotateCcw className="h-5 w-5 text-purple-600" />
-                                <h2 className="text-xl font-semibold text-gray-900">루틴</h2>
+                        <section className="flex flex-col" aria-labelledby="routine-heading">
+                            <div className="flex items-center gap-2 mb-2">
+                                <RotateCcw className="h-5 w-5 text-purple-600" aria-hidden />
+                                <h2 id="routine-heading" className="text-xl font-semibold text-gray-900">
+                                    루틴
+                                </h2>
                             </div>
-
-                            {/* 루틴 완료율 프로그레스 바 */}
+                            <p className="text-sm text-gray-500 mb-3">매일 반복할 습관을 등록해요</p>
                             <RoutineProgressBar />
-
-                            <RoutineList />
-                        </div>
+                            <Button
+                                onClick={() => setIsRoutineModalOpen(true)}
+                                variant="outline"
+                                className="mb-4 gap-2 self-start"
+                            >
+                                <PlusIcon className="h-4 w-4" />
+                                새 루틴 만들기
+                            </Button>
+                            <RoutineList onAddClick={() => setIsRoutineModalOpen(true)} />
+                        </section>
                     </div>
                 </div>
             </main>

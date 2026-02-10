@@ -5,8 +5,14 @@ import React from "react";
 import { useConfirmModal } from "@/components/ui/confirm-modal";
 import { PageLoading } from "@/components/ui/loading";
 import ScheduleListItem from "@/app/components/main/ScheduleListItem";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
-const ScheduleList = () => {
+type ScheduleListProps = {
+    onAddClick?: () => void;
+};
+
+const ScheduleList = ({ onAddClick }: ScheduleListProps) => {
     const { data: schedules, isLoading } = useGetSchedules();
     const { openConfirm, ConfirmModal } = useConfirmModal();
 
@@ -20,11 +26,11 @@ const ScheduleList = () => {
                     <ScheduleListItem key={schedule.id} schedule={schedule} openConfirm={openConfirm} />
                 ))
             ) : (
-                <div className="flex flex-col items-center justify-center py-16 px-4">
+                <div className="flex flex-col items-center justify-center py-12 sm:py-16 px-4">
                     <div className="text-center">
-                        <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center">
                             <svg
-                                className="w-12 h-12 text-blue-500"
+                                className="w-10 h-10 sm:w-12 sm:h-12 text-blue-500"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -37,19 +43,16 @@ const ScheduleList = () => {
                                 />
                             </svg>
                         </div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">아직 등록된 일정이 없어요</h3>
-                        <p className="text-gray-500 mb-6">새로운 일정을 등록해보세요!</p>
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-sm font-medium">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                />
-                            </svg>
-                            위의 &quot;새 일정 만들기&quot; 버튼을 클릭하세요
-                        </div>
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">아직 등록된 일정이 없어요</h3>
+                        <p className="text-gray-500 mb-6 text-sm sm:text-base">첫 일정을 만들어 보세요!</p>
+                        {onAddClick ? (
+                            <Button onClick={onAddClick} className="gap-2">
+                                <Plus className="h-4 w-4" />
+                                첫 일정 만들기
+                            </Button>
+                        ) : (
+                            <p className="text-sm text-gray-500">위의 &quot;새 일정 만들기&quot; 버튼을 클릭하세요</p>
+                        )}
                     </div>
                 </div>
             )}

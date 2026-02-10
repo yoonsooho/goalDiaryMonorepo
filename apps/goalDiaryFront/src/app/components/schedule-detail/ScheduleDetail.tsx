@@ -74,16 +74,15 @@ export default function ScheduleDetail({ scheduleId }: { scheduleId: number }) {
 
             {/* 메인 레이아웃: 데스크톱에서는 좌우 2컬럼, 모바일에서는 위아래 */}
             <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,0.6fr)_minmax(0,0.4fr)] items-start">
-                {/* 왼쪽: 할 일 보드 */}
-                <section className="space-y-3 sm:space-y-4">
-                    <div className="flex items-center justify-between">
+                {/* 왼쪽: 할 일 보드 (영역 고정 높이 + 내부 스크롤) */}
+                <section className="flex flex-col min-h-0">
+                    <div className="flex items-center justify-between shrink-0 mb-2">
                         <div>
                             <h2 className="text-base sm:text-lg font-semibold text-slate-900">할 일 보드</h2>
                             <span className="text-xs text-slate-500">카드 안에서 세부 내용을 관리하세요.</span>
                         </div>
                     </div>
-
-                    <div className="flex flex-col gap-4">
+                    <div className="flex flex-col gap-4 max-h-[min(70vh,800px)] overflow-y-auto rounded-xl border border-slate-200 bg-slate-100/50 p-2 sm:p-3">
                         {boards?.map((board) => (
                             <BoardColumn
                                 key={board.id}

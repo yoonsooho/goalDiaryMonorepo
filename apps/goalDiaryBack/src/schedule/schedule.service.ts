@@ -142,6 +142,12 @@ export class ScheduleService {
       new Map(allSchedules.map((schedule) => [schedule.id, schedule])).values(),
     );
 
+    // 5. 최근 등록순 정렬 (createdAt 내림차순)
+    uniqueSchedules.sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+
     return uniqueSchedules;
   }
 
