@@ -29,18 +29,18 @@ export default defineConfig({
                 NEXT_PUBLIC_API_URL: "http://localhost:3001",
             },
         },
-        // NestJS 백엔드 서버 (기존 PostgreSQL 컨테이너 사용)
+        // NestJS 백엔드 (goalDiaryBack). 마이그레이션 먼저 실행 후 서버 시작 (user_refresh_tokens 등 테이블 필요)
         {
-            command: "cd ../todoDndBack && docker start todoDndBack && sleep 15 && npm run start:dev",
+            command: "cd ../goalDiaryBack && pnpm run migration:run && pnpm run start:dev",
             url: "http://localhost:3001",
-            reuseExistingServer: false,
-            timeout: 300 * 1000, // 5분 대기
+            reuseExistingServer: !process.env.CI,
+            timeout: 120 * 1000,
             env: {
-                DB_HOST: "localhost",
-                DB_PORT: "5432",
-                DB_USERNAME: "test",
-                DB_PASSWORD: "test",
-                DB_DATABASE: "todoDndBack",
+                DB_HOST: process.env.DB_HOST || "localhost",
+                DB_PORT: process.env.DB_PORT || "5432",
+                DB_USERNAME: process.env.DB_USERNAME || "test",
+                DB_PASSWORD: process.env.DB_PASSWORD || "test",
+                DB_DATABASE: process.env.DB_DATABASE || "todoDndBack",
             },
         },
     ],

@@ -74,8 +74,10 @@ test.describe("로그인 플로우", () => {
         await page.fill('input[name="password"]', "wrongpassword");
         await page.click("button[type='submit']");
 
-        // 에러 메시지가 표시되는지 확인
-        await expect(page.locator('.error-message, [class*="error"], [class*="red"]')).toBeVisible();
+        // 서버/폼 에러 메시지 (text-red-500 또는 API 메시지)
+        await expect(
+            page.locator(".text-red-500").filter({ hasNotText: "" }),
+        ).toBeVisible({ timeout: 8000 });
     });
 
     test("빈 필드로 로그인 시도 시 에러 메시지 표시", async ({ page }) => {
@@ -112,16 +114,16 @@ test.describe("로그인 플로우", () => {
     });
 
     test("로딩 중일 때 버튼이 비활성화된다", async ({ page }) => {
-        await page.goto("/"); // 루트 경로로 변경
+        await page.goto("/");
 
-        // 로그인 폼이 로드될 때까지 대기
         await page.waitForSelector('input[name="userId"]', { timeout: 10000 });
-
-        await page.fill('input[name="userId"]', "admin");
+        await page.fill('input[name="userId"]', "nonexistentuser12345");
         await page.fill('input[name="password"]', "qwe123@@");
-        await page.click('button[type="submit"]');
 
-        // 로딩 중에 버튼이 비활성화되는지 확인 (짧은 시간)
-        await expect(page.locator('button[type="submit"]')).toBeDisabled();
+        const submitBtn = page.locator('button[type="submit"]');
+        await submitBtn.click();
+
+        // 제출 직후 버튼이 비활성화되는지 확인 (응답 전까지 짧게 유지됨)
+        await expect(submitBtn).toBeDisabled({ timeout: 2000 });
     });
 });
