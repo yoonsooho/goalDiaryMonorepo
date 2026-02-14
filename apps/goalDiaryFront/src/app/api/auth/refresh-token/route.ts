@@ -52,15 +52,23 @@ export async function POST(request: NextRequest) {
         const responseData = await refreshResponse.json();
 
         // 3. Next.js 응답 생성
-        const response = NextResponse.json({ success: true, data: responseData });
+        const response = NextResponse.json(
+            { success: refreshResponse.ok, data: responseData },
+            { status: refreshResponse.status }
+        );
 
-        // 4. 백엔드 응답의 Set-Cookie 헤더를 그대로 브라우저로 전달
-        //    같은 도메인(Next.js API Route)에서 설정하므로 쿠키가 정상적으로 저장됨
-        //    - access_token: 15분 유효
-        //    - refresh_token: 7일 유효, httpOnly=true (XSS 방지)
-        const setCookieHeaders = refreshResponse.headers.get("set-cookie");
-        if (setCookieHeaders) {
-            response.headers.set("Set-Cookie", setCookieHeaders);
+        // 4. Set-Cookie는 **성공 시에만** 전달. 실패 시(403 등) 백엔드는 clearCookies로 쿠키 삭제 헤더를 보내는데,
+        //    그걸 그대로 넘기면 브라우저에서 refresh_token까지 지워져서 완전 로그아웃됨.
+        //    실패 시에는 쿠키를 건드리지 않아서, 사용자가 재시도하거나 다른 탭 결과를 기다릴 수 있게 함.
+        if (refreshResponse.ok) {
+            const setCookies =
+                typeof refreshResponse.headers.getSetCookie === "function"
+                    ? refreshResponse.headers.getSetCookie()
+                    : [refreshResponse.headers.get("set-cookie")].filter(Boolean) as string[];
+            setCookies.forEach((cookie, i) => {
+                if (i === 0) response.headers.set("Set-Cookie", cookie);
+                else response.headers.append("Set-Cookie", cookie);
+            });
         }
 
         return response;

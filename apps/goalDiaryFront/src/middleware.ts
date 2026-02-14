@@ -60,13 +60,17 @@ export async function middleware(request: NextRequest) {
         });
 
         if (refreshResponse.ok) {
-            // 토큰 재발급 성공 - 쿠키 설정
-            const setCookieHeaders = refreshResponse.headers.get("set-cookie");
-            if (setCookieHeaders) {
-                // 쿠키를 설정한 후, 같은 URL로 리다이렉트하여 새로운 요청을 만들어
-                // 서버 컴포넌트에서 쿠키를 확실히 읽을 수 있도록 함
+            // 토큰 재발급 성공 - Set-Cookie 전부 전달 (access_token, refresh_token 둘 다 필요)
+            const setCookies =
+                typeof refreshResponse.headers.getSetCookie === "function"
+                    ? refreshResponse.headers.getSetCookie()
+                    : [refreshResponse.headers.get("set-cookie")].filter(Boolean) as string[];
+            if (setCookies.length > 0) {
                 const response = NextResponse.redirect(request.url);
-                response.headers.set("Set-Cookie", setCookieHeaders);
+                setCookies.forEach((cookie, i) => {
+                    if (i === 0) response.headers.set("Set-Cookie", cookie);
+                    else response.headers.append("Set-Cookie", cookie);
+                });
                 return response;
             }
         }

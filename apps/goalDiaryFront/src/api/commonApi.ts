@@ -1,5 +1,8 @@
 import { getAccessTokenFromCookie } from "@/lib/utils";
 
+/** refresh 진행 중일 때 그 Promise를 공유해서, 동시에 여러 번 refresh 호출되지 않게 함 (로테이션 시 이전 토큰 재사용 방지) */
+let refreshPromise: Promise<boolean> | null = null;
+
 interface CommonApiOptions {
     method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
     headers?: HeadersInit;
@@ -42,32 +45,35 @@ export const commonApi = async (url: string, options: CommonApiOptions = {}): Pr
     // 401 에러(Unauthorized)이고 인증이 필요한 API인 경우 토큰 재발급 시도
     if (response.status === 401 && requireAuth) {
         try {
-            // 토큰 재발급 요청
-            const refreshResponse = await fetch("/api/auth/refresh-token", {
-                method: "POST",
-                credentials: "include",
-            });
-
-            if (refreshResponse.ok) {
-                // 새로운 토큰으로 헤더 업데이트
-                const newToken = getAccessTokenFromCookie();
-                if (newToken) {
-                    headers.Authorization = `Bearer ${newToken}`;
-                }
-
-                // 원본 요청 재시도
-                response = await fetch(url, {
-                    method,
-                    headers,
-                    credentials,
-                    body: body ? JSON.stringify(body) : undefined,
+            // 동시에 여러 요청이 401이면 refresh는 한 번만 실행 (로테이션 시 이전 토큰 재사용으로 403 방지)
+            if (!refreshPromise) {
+                refreshPromise = (async () => {
+                    const refreshResponse = await fetch("/api/auth/refresh-token", {
+                        method: "POST",
+                        credentials: "include",
+                    });
+                    return refreshResponse.ok;
+                })().finally(() => {
+                    refreshPromise = null;
                 });
-            } else {
-                // 토큰 재발급이 실패한 경우 로그인 페이지로 리디렉션
+            }
+            const promiseToWait = refreshPromise;
+            const refreshed = await promiseToWait;
+            if (!refreshed) {
                 window.location.href = "/";
                 throw new Error("인증이 만료되었습니다. 다시 로그인해주세요.");
             }
+            const newToken = getAccessTokenFromCookie();
+            if (newToken) headers.Authorization = `Bearer ${newToken}`;
+            response = await fetch(url, {
+                method,
+                headers,
+                credentials,
+                body: body ? JSON.stringify(body) : undefined,
+            });
         } catch (refreshError) {
+            refreshPromise = null;
+            if ((refreshError as Error).message?.includes("로그인")) throw refreshError;
             console.error("토큰 재발급 중 에러:", refreshError);
             window.location.href = "/";
             throw new Error("인증이 만료되었습니다. 다시 로그인해주세요.");
