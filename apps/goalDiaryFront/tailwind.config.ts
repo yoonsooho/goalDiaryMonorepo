@@ -31,6 +31,10 @@ const config: Config = {
   				'0%': { opacity: '0.4', transform: 'translateX(80px)' },
   				'100%': { opacity: '1', transform: 'translateX(0)' },
   			},
+  			'letter-drop': {
+  				'0%': { opacity: '0', transform: 'translateY(-16px)' },
+  				'100%': { opacity: '1', transform: 'translateY(0)' },
+  			},
   		},
   		animation: {
   			'fade-in-up': 'fade-in-up 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards',
@@ -38,6 +42,7 @@ const config: Config = {
   			'pop-in': 'pop-in 1s cubic-bezier(0.22, 1, 0.36, 1) forwards',
   			'slide-in-from-left': 'slide-in-from-left 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards',
   			'slide-in-from-right': 'slide-in-from-right 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+  			'letter-drop': 'letter-drop 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards',
   		},
   		backgroundImage: {
   			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

@@ -1,5 +1,6 @@
 import { CheckCircle, Users, Target, Clock, BookOpen, MessageSquare, Calendar, Zap, TrendingUp } from "lucide-react";
 import HeroSection from "./components/HeroSection";
+import { LetterDropReveal } from "./components/LetterDropReveal";
 import { PopInOnScroll } from "./components/PopInOnScroll";
 import { ScrollReveal } from "./components/ScrollReveal";
 import Image from "next/image";
@@ -53,7 +54,9 @@ export default function Home() {
                     <div className="mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-12 lg:gap-16 items-start">
                         {/* 왼쪽: 스크롤해도 고정, 다 내려가면 섹션과 함께 사라짐 */}
                         <div className="lg:sticky lg:top-24 lg:self-start">
-                            <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">사용 방법</h2>
+                            <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+                                <LetterDropReveal text="사용 방법" />
+                            </h2>
                             <p className="mt-6 text-lg leading-8 text-gray-600">
                                 3단계로 오늘의 일정을 완벽하게 관리하세요
                             </p>
@@ -62,44 +65,50 @@ export default function Home() {
                         {/* 오른쪽: 1·2·3 카드 세로 + 스크린샷 (스크롤되면 위로 사라짐) */}
                         <div className="space-y-16">
                             <div className="space-y-8">
-                                <div className="relative">
-                                    <div className="absolute -top-4 -left-4 h-14 w-14 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                                        1
-                                    </div>
-                                    <div className="pt-10 px-8 pb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-100 shadow-sm">
-                                        <h3 className="text-xl font-semibold text-gray-900 mb-3">모든 일정 작성</h3>
+                                <div className="group">
+                                    <div className="relative transition-all duration-300 ease-out group-hover:scale-[1.02] group-hover:-translate-y-1">
+                                        <div className="absolute -top-4 -left-4 h-14 w-14 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                                            1
+                                        </div>
+                                        <div className="pt-10 px-8 pb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-100 shadow-sm transition-all duration-300 ease-out group-hover:shadow-xl group-hover:border-blue-200">
+                                            <h3 className="text-xl font-semibold text-gray-900 mb-3">모든 일정 작성</h3>
                                         <p className="text-gray-600 leading-relaxed">
                                             그날 해야 할 모든 일을 자유롭게 쭉 적어보세요. 아무 제약 없이 먼저 생각나는 대로
                                             작성합니다. 할 일, 하고 싶은 일, 해야 할 일을 구분하지 말고 먼저 머릿속을 비우는
                                             것이 중요합니다. 리스트가 길어도 괜찮습니다.
-                                        </p>
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="relative">
-                                    <div className="absolute -top-4 -left-4 h-14 w-14 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                                        2
-                                    </div>
-                                    <div className="pt-10 px-8 pb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-100 shadow-sm">
-                                        <h3 className="text-xl font-semibold text-gray-900 mb-3">BIG3 선택</h3>
+                                <div className="group">
+                                    <div className="relative transition-all duration-300 ease-out group-hover:scale-[1.02] group-hover:-translate-y-1">
+                                        <div className="absolute -top-4 -left-4 h-14 w-14 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                                            2
+                                        </div>
+                                        <div className="pt-10 px-8 pb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-100 shadow-sm transition-all duration-300 ease-out group-hover:shadow-xl group-hover:border-blue-200">
+                                            <h3 className="text-xl font-semibold text-gray-900 mb-3">BIG3 선택</h3>
                                         <p className="text-gray-600 leading-relaxed">
                                             작성한 일정 중에서 <strong className="text-gray-900">BIG1, BIG2, BIG3</strong>를
                                             선택하세요. 오늘 꼭 지켜야 할 핵심 3가지를 명확히 합니다. 나머지는 이 세 가지를
                                             지키고 나서 할 수 있는 만큼 하면 됩니다. 우선순위가 뚜렷해지면 하루가 덜 혼란스럽습니다.
-                                        </p>
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="relative">
-                                    <div className="absolute -top-4 -left-4 h-14 w-14 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                                        3
-                                    </div>
-                                    <div className="pt-10 px-8 pb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-100 shadow-sm">
-                                        <h3 className="text-xl font-semibold text-gray-900 mb-3">시간에 배치하기</h3>
+                                <div className="group">
+                                    <div className="relative transition-all duration-300 ease-out group-hover:scale-[1.02] group-hover:-translate-y-1">
+                                        <div className="absolute -top-4 -left-4 h-14 w-14 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
+                                            3
+                                        </div>
+                                        <div className="pt-10 px-8 pb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-100 shadow-sm transition-all duration-300 ease-out group-hover:shadow-xl group-hover:border-blue-200">
+                                            <h3 className="text-xl font-semibold text-gray-900 mb-3">시간에 배치하기</h3>
                                         <p className="text-gray-600 leading-relaxed">
                                             선택한 BIG3를{" "}
                                             <strong className="text-gray-900">먼저 캘린더에 시간으로 배치하고</strong>,
                                             나머지 일정을 그 주변에 배치합니다. 중요한 일에 먼저 시간을 할당하면, 그날의 골격이
                                             잡히고 예상치 못한 일이 끼어들어도 핵심만은 지킬 수 있습니다.
-                                        </p>
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -130,14 +139,16 @@ export default function Home() {
                 <section id="features" className="px-4 py-20 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-blue-50">
                     <div className="mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-12 lg:gap-16 items-start">
                         <div className="lg:sticky lg:top-24 lg:self-start">
-                            <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">주요 기능</h2>
+                            <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+                                <LetterDropReveal text="주요 기능" />
+                            </h2>
                             <p className="mt-6 text-lg leading-8 text-gray-600">
                                 개인 생산성과 팀 협업을 한 화면에서 관리하세요
                             </p>
                         </div>
 
                         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow h-full flex flex-col">
+                            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transition-all duration-300 ease-out h-full flex flex-col hover:scale-[1.02] hover:shadow-xl hover:-translate-y-1 hover:border-blue-200">
                                 <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                                     <Calendar className="h-6 w-6 text-blue-600" />
                                 </div>
@@ -152,7 +163,7 @@ export default function Home() {
                                     </li>
                                 </ul>
                             </div>
-                            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow h-full flex flex-col">
+                            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transition-all duration-300 ease-out h-full flex flex-col hover:scale-[1.02] hover:shadow-xl hover:-translate-y-1 hover:border-blue-200">
                                 <div className="h-12 w-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
                                     <TrendingUp className="h-6 w-6 text-purple-600" />
                                 </div>
@@ -167,7 +178,7 @@ export default function Home() {
                                     </li>
                                 </ul>
                             </div>
-                            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow h-full flex flex-col">
+                            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transition-all duration-300 ease-out h-full flex flex-col hover:scale-[1.02] hover:shadow-xl hover:-translate-y-1 hover:border-blue-200">
                                 <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
                                     <MessageSquare className="h-6 w-6 text-yellow-600" />
                                 </div>
@@ -182,7 +193,7 @@ export default function Home() {
                                     </li>
                                 </ul>
                             </div>
-                            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow h-full flex flex-col">
+                            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transition-all duration-300 ease-out h-full flex flex-col hover:scale-[1.02] hover:shadow-xl hover:-translate-y-1 hover:border-blue-200">
                                 <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
                                     <BookOpen className="h-6 w-6 text-green-600" />
                                 </div>
@@ -197,7 +208,7 @@ export default function Home() {
                                     </li>
                                 </ul>
                             </div>
-                            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 hover:shadow-xl transition-shadow h-full flex flex-col sm:col-span-2 lg:col-span-1">
+                            <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-100 transition-all duration-300 ease-out h-full flex flex-col sm:col-span-2 lg:col-span-1 hover:scale-[1.02] hover:shadow-xl hover:-translate-y-1 hover:border-blue-200">
                                 <div className="h-12 w-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
                                     <Users className="h-6 w-6 text-indigo-600" />
                                 </div>
@@ -221,7 +232,7 @@ export default function Home() {
                     <div className="mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-12 lg:gap-16 items-start">
                         <div className="lg:sticky lg:top-24 lg:self-start">
                             <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
-                                왜 GoalDiary를 선택해야 할까요?
+                                <LetterDropReveal text="왜 GoalDiary를 선택해야 할까요?" />
                             </h2>
                             <p className="mt-6 text-lg leading-8 text-gray-600">
                                 기존 일정 관리 앱과는 다른 혁신적인 접근 방식
@@ -229,7 +240,7 @@ export default function Home() {
                         </div>
 
                         <div className="space-y-8">
-                            <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 text-left">
+                            <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 text-left transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-xl hover:-translate-y-1 hover:border-blue-200 hover:bg-white">
                                 <div className="h-14 w-14 bg-blue-100 rounded-xl flex items-center justify-center mb-5">
                                     <Target className="h-7 w-7 text-blue-600" />
                                 </div>
@@ -238,7 +249,7 @@ export default function Home() {
                                     하루에 해야 할 일이 많을 때, 무엇이 진짜 중요한지 한눈에 보이지 않았나요? GoalDiary는 BIG3를 먼저 선택하고 시간에 배치하게 해서 우선순위가 흐려지지 않습니다. 나머지 일은 “BIG3를 지킨 뒤” 할 수 있는 만큼만 하면 됩니다.
                                 </p>
                             </div>
-                            <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 text-left">
+                            <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 text-left transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-xl hover:-translate-y-1 hover:border-blue-200 hover:bg-white">
                                 <div className="h-14 w-14 bg-purple-100 rounded-xl flex items-center justify-center mb-5">
                                     <Clock className="h-7 w-7 text-purple-600" />
                                 </div>
@@ -247,7 +258,7 @@ export default function Home() {
                                     중요한 일을 먼저 시간에 배치하고, 나머지 일정을 그 주변에 채웁니다. 그때그때 일정이 끼어들어도 이미 골격이 잡혀 있어서 우선순위가 흐려지지 않고, 오늘 꼭 할 일만 놓치지 않을 수 있습니다.
                                 </p>
                             </div>
-                            <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 text-left">
+                            <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 text-left transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-xl hover:-translate-y-1 hover:border-blue-200 hover:bg-white">
                                 <div className="h-14 w-14 bg-indigo-100 rounded-xl flex items-center justify-center mb-5">
                                     <Users className="h-7 w-7 text-indigo-600" />
                                 </div>
