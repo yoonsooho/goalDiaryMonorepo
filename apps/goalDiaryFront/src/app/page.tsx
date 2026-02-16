@@ -1,8 +1,8 @@
 import { CheckCircle, Users, Target, Clock, BookOpen, MessageSquare, Calendar, Zap, TrendingUp } from "lucide-react";
-import HeroSection from "./components/HeroSection";
-import { LetterDropReveal } from "./components/LetterDropReveal";
-import { PopInOnScroll } from "./components/PopInOnScroll";
-import { ScrollReveal } from "./components/ScrollReveal";
+import HeroSection from "./pageComponents/HeroSection";
+import { LetterDropReveal } from "@/components/common/LetterDropReveal";
+import { PopInOnScroll } from "@/components/common/PopInOnScroll";
+import { ScrollReveal } from "@/components/common/ScrollReveal";
 import Image from "next/image";
 
 export default function Home() {
@@ -72,10 +72,10 @@ export default function Home() {
                                         </div>
                                         <div className="pt-10 px-8 pb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-100 shadow-sm transition-all duration-300 ease-out group-hover:shadow-xl group-hover:border-blue-200">
                                             <h3 className="text-xl font-semibold text-gray-900 mb-3">모든 일정 작성</h3>
-                                        <p className="text-gray-600 leading-relaxed">
-                                            그날 해야 할 모든 일을 자유롭게 쭉 적어보세요. 아무 제약 없이 먼저 생각나는 대로
-                                            작성합니다. 할 일, 하고 싶은 일, 해야 할 일을 구분하지 말고 먼저 머릿속을 비우는
-                                            것이 중요합니다. 리스트가 길어도 괜찮습니다.
+                                            <p className="text-gray-600 leading-relaxed">
+                                                그날 해야 할 모든 일을 자유롭게 쭉 적어보세요. 아무 제약 없이 먼저
+                                                생각나는 대로 작성합니다. 할 일, 하고 싶은 일, 해야 할 일을 구분하지
+                                                말고 먼저 머릿속을 비우는 것이 중요합니다. 리스트가 길어도 괜찮습니다.
                                             </p>
                                         </div>
                                     </div>
@@ -87,10 +87,12 @@ export default function Home() {
                                         </div>
                                         <div className="pt-10 px-8 pb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-100 shadow-sm transition-all duration-300 ease-out group-hover:shadow-xl group-hover:border-blue-200">
                                             <h3 className="text-xl font-semibold text-gray-900 mb-3">BIG3 선택</h3>
-                                        <p className="text-gray-600 leading-relaxed">
-                                            작성한 일정 중에서 <strong className="text-gray-900">BIG1, BIG2, BIG3</strong>를
-                                            선택하세요. 오늘 꼭 지켜야 할 핵심 3가지를 명확히 합니다. 나머지는 이 세 가지를
-                                            지키고 나서 할 수 있는 만큼 하면 됩니다. 우선순위가 뚜렷해지면 하루가 덜 혼란스럽습니다.
+                                            <p className="text-gray-600 leading-relaxed">
+                                                작성한 일정 중에서{" "}
+                                                <strong className="text-gray-900">BIG1, BIG2, BIG3</strong>를
+                                                선택하세요. 오늘 꼭 지켜야 할 핵심 3가지를 명확히 합니다. 나머지는 이 세
+                                                가지를 지키고 나서 할 수 있는 만큼 하면 됩니다. 우선순위가 뚜렷해지면
+                                                하루가 덜 혼란스럽습니다.
                                             </p>
                                         </div>
                                     </div>
@@ -101,12 +103,17 @@ export default function Home() {
                                             3
                                         </div>
                                         <div className="pt-10 px-8 pb-8 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border-2 border-blue-100 shadow-sm transition-all duration-300 ease-out group-hover:shadow-xl group-hover:border-blue-200">
-                                            <h3 className="text-xl font-semibold text-gray-900 mb-3">시간에 배치하기</h3>
-                                        <p className="text-gray-600 leading-relaxed">
-                                            선택한 BIG3를{" "}
-                                            <strong className="text-gray-900">먼저 캘린더에 시간으로 배치하고</strong>,
-                                            나머지 일정을 그 주변에 배치합니다. 중요한 일에 먼저 시간을 할당하면, 그날의 골격이
-                                            잡히고 예상치 못한 일이 끼어들어도 핵심만은 지킬 수 있습니다.
+                                            <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                                                시간에 배치하기
+                                            </h3>
+                                            <p className="text-gray-600 leading-relaxed">
+                                                선택한 BIG3를{" "}
+                                                <strong className="text-gray-900">
+                                                    먼저 캘린더에 시간으로 배치하고
+                                                </strong>
+                                                , 나머지 일정을 그 주변에 배치합니다. 중요한 일에 먼저 시간을 할당하면,
+                                                그날의 골격이 잡히고 예상치 못한 일이 끼어들어도 핵심만은 지킬 수
+                                                있습니다.
                                             </p>
                                         </div>
                                     </div>
@@ -246,7 +253,9 @@ export default function Home() {
                                 </div>
                                 <h3 className="text-xl font-semibold text-gray-900 mb-3">우선순위 명확화</h3>
                                 <p className="text-gray-600 leading-relaxed">
-                                    하루에 해야 할 일이 많을 때, 무엇이 진짜 중요한지 한눈에 보이지 않았나요? GoalDiary는 BIG3를 먼저 선택하고 시간에 배치하게 해서 우선순위가 흐려지지 않습니다. 나머지 일은 “BIG3를 지킨 뒤” 할 수 있는 만큼만 하면 됩니다.
+                                    하루에 해야 할 일이 많을 때, 무엇이 진짜 중요한지 한눈에 보이지 않았나요?
+                                    GoalDiary는 BIG3를 먼저 선택하고 시간에 배치하게 해서 우선순위가 흐려지지 않습니다.
+                                    나머지 일은 “BIG3를 지킨 뒤” 할 수 있는 만큼만 하면 됩니다.
                                 </p>
                             </div>
                             <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 text-left transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-xl hover:-translate-y-1 hover:border-blue-200 hover:bg-white">
@@ -255,7 +264,9 @@ export default function Home() {
                                 </div>
                                 <h3 className="text-xl font-semibold text-gray-900 mb-3">시간 관리 효율성</h3>
                                 <p className="text-gray-600 leading-relaxed">
-                                    중요한 일을 먼저 시간에 배치하고, 나머지 일정을 그 주변에 채웁니다. 그때그때 일정이 끼어들어도 이미 골격이 잡혀 있어서 우선순위가 흐려지지 않고, 오늘 꼭 할 일만 놓치지 않을 수 있습니다.
+                                    중요한 일을 먼저 시간에 배치하고, 나머지 일정을 그 주변에 채웁니다. 그때그때 일정이
+                                    끼어들어도 이미 골격이 잡혀 있어서 우선순위가 흐려지지 않고, 오늘 꼭 할 일만 놓치지
+                                    않을 수 있습니다.
                                 </p>
                             </div>
                             <div className="p-8 bg-gray-50 rounded-2xl border border-gray-100 text-left transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-xl hover:-translate-y-1 hover:border-blue-200 hover:bg-white">
@@ -264,7 +275,9 @@ export default function Home() {
                                 </div>
                                 <h3 className="text-xl font-semibold text-gray-900 mb-3">통합 관리</h3>
                                 <p className="text-gray-600 leading-relaxed">
-                                    일정, 루틴, 명언, 일기, 팀 협업까지 한 화면에서 관리할 수 있습니다. 앱을 여러 개 켜 두지 않아도 되고, 개인 생산성과 팀 협업을 하나의 흐름 안에서 함께 달성할 수 있습니다.
+                                    일정, 루틴, 명언, 일기, 팀 협업까지 한 화면에서 관리할 수 있습니다. 앱을 여러 개 켜
+                                    두지 않아도 되고, 개인 생산성과 팀 협업을 하나의 흐름 안에서 함께 달성할 수
+                                    있습니다.
                                 </p>
                             </div>
                         </div>

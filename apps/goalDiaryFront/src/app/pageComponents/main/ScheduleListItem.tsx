@@ -8,9 +8,9 @@ import { useDeleteSchedules, useUpdateSchedules, useConvertScheduleToTeam } from
 import { useInviteTeamMember } from "@/app/hooks/apiHook/useTeams";
 import { toast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import UpdateScheduleModal from "@/app/components/main/modal/UpdateScheduleModal";
-import ConvertToTeamModal from "@/app/components/main/modal/ConvertToTeamModal";
-import InviteTeamMemberModal from "@/app/components/main/modal/InviteTeamMemberModal";
+import UpdateScheduleModal from "@/app/pageComponents/main/modal/UpdateScheduleModal";
+import ConvertToTeamModal from "@/app/pageComponents/main/modal/ConvertToTeamModal";
+import InviteTeamMemberModal from "@/app/pageComponents/main/modal/InviteTeamMemberModal";
 
 const ScheduleListItem = ({
     schedule,

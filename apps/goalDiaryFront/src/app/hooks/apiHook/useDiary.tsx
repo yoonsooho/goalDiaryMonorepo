@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getDiary, postDiary, deleteDiary, updateDiary, getDiaryById } from "@/api/diaryApi";
-import { DiaryTimeFormData } from "@/app/components/diary/type";
+import { DiaryTimeFormData } from "@/app/pageComponents/diary/type";
 
 export const useGetDiary = () => {
     return useQuery({

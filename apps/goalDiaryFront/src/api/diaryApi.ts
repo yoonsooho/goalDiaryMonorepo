@@ -1,4 +1,4 @@
-import { DiaryTimeFormData } from "@/app/components/diary/type";
+import { DiaryTimeFormData } from "@/app/pageComponents/diary/type";
 import { commonApiJson } from "./commonApi";
 
 export const getDiary = async () => {

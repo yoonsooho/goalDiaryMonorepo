@@ -4,7 +4,7 @@ import { GetSchedulesType } from "@/type/ScheduleType";
 import React from "react";
 import { useConfirmModal } from "@/components/ui/confirm-modal";
 import { PageLoading } from "@/components/ui/loading";
-import ScheduleListItem from "@/app/components/main/ScheduleListItem";
+import ScheduleListItem from "@/app/pageComponents/main/ScheduleListItem";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
@@ -43,12 +43,13 @@ const ScheduleList = ({ onAddClick }: ScheduleListProps) => {
                                 />
                             </svg>
                         </div>
-                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">아직 등록된 일정이 없어요</h3>
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+                            아직 등록된 일정이 없어요
+                        </h3>
                         <p className="text-gray-500 mb-6 text-sm sm:text-base">첫 일정을 만들어 보세요!</p>
                         {onAddClick ? (
                             <Button onClick={onAddClick} className="gap-2">
-                                <Plus className="h-4 w-4" />
-                                첫 일정 만들기
+                                <Plus className="h-4 w-4" />첫 일정 만들기
                             </Button>
                         ) : (
                             <p className="text-sm text-gray-500">위의 &quot;새 일정 만들기&quot; 버튼을 클릭하세요</p>

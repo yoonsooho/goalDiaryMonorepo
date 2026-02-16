@@ -1,7 +1,7 @@
 "use client";
 
 import { useGetDiary, useDeleteDiary } from "@/app/hooks/apiHook/useDiary";
-import { DiaryFormData } from "@/app/components/diary/type";
+import { DiaryFormData } from "@/app/pageComponents/diary/type";
 import Link from "next/link";
 import { PageLoading } from "@/components/ui/loading";
 import { Button } from "@/components/ui/button";

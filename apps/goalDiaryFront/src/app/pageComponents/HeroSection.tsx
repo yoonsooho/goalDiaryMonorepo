@@ -35,8 +35,8 @@ export default function HeroSection() {
                             style={{ animationDelay: "200ms" }}
                         >
                             일반 Todo처럼 체크만 하는 게 아니라,{" "}
-                            <strong className="text-gray-900">BIG1/BIG2/BIG3를 먼저 고르고</strong> → 그걸 우선으로
-                            시간 배정 → 나머지 작업을 주변에 배치하는{" "}
+                            <strong className="text-gray-900">BIG1/BIG2/BIG3를 먼저 고르고</strong> → 그걸 우선으로 시간
+                            배정 → 나머지 작업을 주변에 배치하는{" "}
                             <strong className="text-gray-900">혁신적인 일정 관리 방식</strong>입니다.
                         </p>
 
@@ -55,7 +55,8 @@ export default function HeroSection() {
                                         기존 일정 앱과의 차이점
                                     </h3>
                                     <p className="mt-1 sm:mt-2 text-gray-600 text-xs sm:text-sm">
-                                        하루에 해야 할 일이 많을 때, 무엇이 진짜 중요한지 한눈에 안 보였나요? GoalDiary는{" "}
+                                        하루에 해야 할 일이 많을 때, 무엇이 진짜 중요한지 한눈에 안 보였나요?
+                                        GoalDiary는{" "}
                                         <strong>오늘 꼭 지켜야 할 핵심 3가지(BIG3)를 먼저 시간에 고정</strong> 하고
                                         나머지를 설계하는 일정 도구입니다.
                                     </p>

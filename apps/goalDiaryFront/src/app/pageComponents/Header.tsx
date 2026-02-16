@@ -9,8 +9,8 @@ import { DropdownMenuDialog } from "@/components/dropDownMenu";
 import { useConfirmModal } from "@/components/ui/confirm-modal";
 import { Bell, Users } from "lucide-react";
 import { useGetUnreadNotificationCount } from "@/app/hooks/apiHook/useNotifications";
-import MyTeamsModal from "@/app/components/main/modal/MyTeamsModal";
-import NotificationsModal from "@/app/components/main/modal/NotificationsModal";
+import MyTeamsModal from "@/app/pageComponents/main/modal/MyTeamsModal";
+import NotificationsModal from "@/app/pageComponents/main/modal/NotificationsModal";
 
 export default function Header() {
     const [mounted, setMounted] = useState(false);

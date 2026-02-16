@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
 import Link from "next/link";
-import DiaryList from "@/app/components/diary/DiaryList";
+import DiaryList from "@/app/pageComponents/diary/DiaryList";
 
 const DiaryPage = () => {
     return (

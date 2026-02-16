@@ -1,5 +1,5 @@
 import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
-import ScheduleDetail from "@/app/components/schedule-detail/ScheduleDetail";
+import ScheduleDetail from "@/app/pageComponents/schedule-detail/ScheduleDetail";
 import { getPostsServer } from "@/api/serverApi";
 import { serverQueryClientConfig } from "@/lib/query-config";
 

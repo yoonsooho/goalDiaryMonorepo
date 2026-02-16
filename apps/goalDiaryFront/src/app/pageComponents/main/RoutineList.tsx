@@ -19,7 +19,7 @@ import {
     Plus,
 } from "lucide-react";
 import { useConfirmModal } from "@/components/ui/confirm-modal";
-import UpdateRoutineModal from "@/app/components/main/modal/UpdateRoutineModal";
+import UpdateRoutineModal from "@/app/pageComponents/main/modal/UpdateRoutineModal";
 import {
     useGetRoutines,
     useDeleteRoutine,
@@ -212,12 +212,15 @@ const RoutineList = ({ onAddClick }: RoutineListProps) => {
                         <div className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 sm:mb-6 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center">
                             <RotateCcw className="w-10 h-10 sm:w-12 sm:h-12 text-purple-500" />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">아직 등록된 루틴이 없어요</h3>
-                        <p className="text-gray-500 mb-6 text-sm sm:text-base">새로운 루틴을 만들어 일상을 체계적으로 관리해보세요!</p>
+                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
+                            아직 등록된 루틴이 없어요
+                        </h3>
+                        <p className="text-gray-500 mb-6 text-sm sm:text-base">
+                            새로운 루틴을 만들어 일상을 체계적으로 관리해보세요!
+                        </p>
                         {onAddClick ? (
                             <Button onClick={onAddClick} className="gap-2 bg-purple-600 hover:bg-purple-700">
-                                <Plus className="h-4 w-4" />
-                                첫 루틴 만들기
+                                <Plus className="h-4 w-4" />첫 루틴 만들기
                             </Button>
                         ) : (
                             <p className="text-sm text-gray-500">위의 &quot;새 루틴 만들기&quot; 버튼을 클릭하세요</p>

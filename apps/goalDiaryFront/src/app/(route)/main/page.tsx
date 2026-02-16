@@ -2,20 +2,20 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, Calendar, RotateCcw } from "lucide-react";
-import CreateScheduleModal from "@/app/components/main/modal/CreateScheduleModal";
-import CreateRoutineModal from "@/app/components/main/modal/CreateRoutineModal";
+import CreateScheduleModal from "@/app/pageComponents/main/modal/CreateScheduleModal";
+import CreateRoutineModal from "@/app/pageComponents/main/modal/CreateRoutineModal";
 import { usePostSchedules } from "@/app/hooks/apiHook/useSchedules";
 import { useCreateRoutine } from "@/app/hooks/apiHook/useRoutine";
 import { PostSchedulesType } from "@/type/ScheduleType";
 import { CreateRoutineDto } from "@/type/RoutineType";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import ScheduleList from "@/app/components/main/ScheduleList";
-import RoutineList from "@/app/components/main/RoutineList";
-import RoutineProgressBar from "@/app/components/main/RoutineProgressBar";
-import QuoteSection from "@/app/components/main/QuoteSection";
-import TodaySummary from "@/app/components/main/TodaySummary";
-import QuickAddSchedule from "@/app/components/main/QuickAddSchedule";
+import ScheduleList from "@/app/pageComponents/main/ScheduleList";
+import RoutineList from "@/app/pageComponents/main/RoutineList";
+import RoutineProgressBar from "@/app/pageComponents/main/RoutineProgressBar";
+import QuoteSection from "@/app/pageComponents/main/QuoteSection";
+import TodaySummary from "@/app/pageComponents/main/TodaySummary";
+import QuickAddSchedule from "@/app/pageComponents/main/QuickAddSchedule";
 
 const Main = () => {
     const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
@@ -130,8 +130,7 @@ const Main = () => {
                                 variant="outline"
                                 className="mb-4 gap-2 self-start"
                             >
-                                <PlusIcon className="h-4 w-4" />
-                                새 루틴 만들기
+                                <PlusIcon className="h-4 w-4" />새 루틴 만들기
                             </Button>
                             <RoutineList onAddClick={() => setIsRoutineModalOpen(true)} />
                         </section>
