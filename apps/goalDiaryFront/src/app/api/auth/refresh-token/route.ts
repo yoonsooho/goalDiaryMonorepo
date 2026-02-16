@@ -1,5 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 
+/** 403 등으로 재로그인 유도 시, 브라우저의 인증 쿠키 제거 (무효 토큰 403 루프 방지) */
+function clearAuthCookies(response: NextResponse) {
+    const isProd = process.env.NODE_ENV === "production";
+    const secure = isProd ? "; Secure" : "";
+    response.headers.append(
+        "Set-Cookie",
+        `access_token=; Path=/; Max-Age=0${secure}; SameSite=${isProd ? "None" : "Lax"}`
+    );
+    response.headers.append(
+        "Set-Cookie",
+        `refresh_token=; Path=/; Max-Age=0; HttpOnly${secure}; SameSite=${isProd ? "None" : "Lax"}`
+    );
+}
+
 /**
  * Refresh Token 갱신 API Route
  *
@@ -57,9 +71,9 @@ export async function POST(request: NextRequest) {
             { status: refreshResponse.status }
         );
 
-        // 4. Set-Cookie는 **성공 시에만** 전달. 실패 시(403 등) 백엔드는 clearCookies로 쿠키 삭제 헤더를 보내는데,
-        //    그걸 그대로 넘기면 브라우저에서 refresh_token까지 지워져서 완전 로그아웃됨.
-        //    실패 시에는 쿠키를 건드리지 않아서, 사용자가 재시도하거나 다른 탭 결과를 기다릴 수 있게 함.
+        // 4. Set-Cookie: 성공 시에만 새 토큰 전달. 실패 시(403) 백엔드 clearCookies는 넘기지 않음(레이스 시 좋은 쿠키 보존).
+        //    403이면 "refresh token이 일치하지 않습니다" → 이미 로테이션됐거나 무효 토큰. 이때는 우리가 쿠키를 지워서
+        //    재로그인 가능하게 함(안 하면 무효 토큰으로 계속 403 루프).
         if (refreshResponse.ok) {
             const setCookies =
                 typeof refreshResponse.headers.getSetCookie === "function"
@@ -69,6 +83,8 @@ export async function POST(request: NextRequest) {
                 if (i === 0) response.headers.set("Set-Cookie", cookie);
                 else response.headers.append("Set-Cookie", cookie);
             });
+        } else if (refreshResponse.status === 403) {
+            clearAuthCookies(response);
         }
 
         return response;

@@ -151,3 +151,16 @@ document.cookie = `refresh_token=${token}; httpOnly`; // ❌ httpOnly는 JavaScr
 - 이 패턴은 Next.js뿐만 아니라 다른 프레임워크(Vercel Serverless Functions, AWS Lambda 등)에서도 동일하게 적용 가능합니다.
 - 프론트엔드와 백엔드가 같은 도메인이라면 이 방법이 필요 없습니다.
 - 프로덕션 환경에서는 HTTPS를 사용해야 `sameSite: 'none'`이 정상 작동합니다.
+
+---
+
+## 트러블슈팅 이력
+
+- **쿠키가 새로고침하면 사라지는 에러**
+  - **해결방안:** 처음에는 서버가 싱가폴에 있어서 시차 문제로 쿠키 시간이 현재 시간보다 이전으로 되어 있어서 새로고침 시 사라지는 줄 알았으나, 1년 후로 설정해도 새로고침 시 사라지는 것으로 시간 문제는 아닌 것 같았다. 찾아보니 크롬에서 도메인이 다른 쿠키를 저장시키지 않아 쿠키가 저장이 안 되는 문제였다.
+  - `프론트는 Vercel, 백엔드는 Render로 배포해서 도메인이 달라 서드파티 쿠키이기 때문에 저장이 안 됨. 프론트에서 proxy로 도메인을 맞춰 문제를 해결`
+
+- **refresh 토큰 재발급을 한 곳에서만 수행 (403 / 로그인 풀림 방지)**
+  - **해결방안:** refresh는 **미들웨어에서만** 수행하도록 통일했다. access_token 없을 때·`?refresh=1` 쿼리 있을 때 미들웨어가 백엔드 `/auth/refresh` 호출 후 Set-Cookie로 같은 URL에 redirect. access_token 유효기간은 15분이고, 15분 뒤면 쿠키도 사라지므로 기본적으로는 미들웨어에서 다 처리된다.
+  - **안전장치:** 이미 페이지에 있는 상태에서 access가 만료돼 API가 401을 줄 때만, commonApi에서 현재 URL에 `?refresh=1`을 붙여 한 번 이동시킨다. 그러면 미들웨어가 `refresh=1` + refresh_token을 보고 refresh 후 `?refresh=1` 제거한 같은 URL로 redirect해서, 사용자는 “토큰 재발급 중” 같은 중간 화면 없이 같은 페이지가 한 번 갱신되는 것만 보게 된다.
+  - `refresh 호출은 미들웨어 한 곳만. commonApi 401 시 ?refresh=1 redirect는 “페이지 안에서 access 만료”일 때만 쓰는 안전장치`
