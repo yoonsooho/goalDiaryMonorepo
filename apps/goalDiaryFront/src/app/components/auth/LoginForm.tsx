@@ -47,16 +47,22 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
     };
 
     return (
-        <Card className="w-[400px] p-4">
-            <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl text-center">로그인</CardTitle>
+        <Card className="w-full max-w-[400px] mx-auto bg-transparent border-0 shadow-none p-0">
+            <CardHeader className="space-y-1 px-0 pt-0">
+                <CardTitle className="text-2xl text-center text-gray-900">로그인</CardTitle>
             </CardHeader>
 
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 px-0 pb-0">
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="userId">사용자 ID</Label>
-                        <Input id="userId" type="text" placeholder="사용자 ID를 입력하세요" {...register("userId")} />
+                        <Input
+                            id="userId"
+                            type="text"
+                            placeholder="사용자 ID를 입력하세요"
+                            className="transition-all duration-200 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:border-blue-400/50"
+                            {...register("userId")}
+                        />
                         {errors.userId && <p className="text-sm text-red-500">{errors.userId.message}</p>}
                     </div>
 
@@ -66,6 +72,7 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
                             id="password"
                             type="password"
                             placeholder="비밀번호를 입력하세요"
+                            className="transition-all duration-200 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:border-blue-400/50"
                             {...register("password")}
                         />
                         {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
@@ -80,10 +87,10 @@ export default function LoginForm({ onSwitchToRegister }: LoginFormProps) {
 
                 <div className="relative">
                     <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t" />
+                        <span className="w-full border-t border-gray-200/80" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                        <span className="bg-white/80 px-2 text-muted-foreground">Or continue with</span>
                     </div>
                 </div>
 

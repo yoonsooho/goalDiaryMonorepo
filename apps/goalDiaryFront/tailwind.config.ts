@@ -9,6 +9,36 @@ const config: Config = {
   ],
   theme: {
   	extend: {
+  		keyframes: {
+  			'fade-in-up': {
+  				'0%': { opacity: '0.4', transform: 'translateY(56px)' },
+  				'100%': { opacity: '1', transform: 'translateY(0)' },
+  			},
+  			'fade-in': {
+  				'0%': { opacity: '0.4' },
+  				'100%': { opacity: '1' },
+  			},
+  			'pop-in': {
+  				'0%': { transform: 'scale(0.94)', opacity: '0.88' },
+  				'65%': { transform: 'scale(1.04)' },
+  				'100%': { transform: 'scale(1)', opacity: '1' },
+  			},
+  			'slide-in-from-left': {
+  				'0%': { opacity: '0.4', transform: 'translateX(-80px)' },
+  				'100%': { opacity: '1', transform: 'translateX(0)' },
+  			},
+  			'slide-in-from-right': {
+  				'0%': { opacity: '0.4', transform: 'translateX(80px)' },
+  				'100%': { opacity: '1', transform: 'translateX(0)' },
+  			},
+  		},
+  		animation: {
+  			'fade-in-up': 'fade-in-up 1.4s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+  			'fade-in': 'fade-in 1s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+  			'pop-in': 'pop-in 1s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+  			'slide-in-from-left': 'slide-in-from-left 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+  			'slide-in-from-right': 'slide-in-from-right 1.35s cubic-bezier(0.22, 1, 0.36, 1) forwards',
+  		},
   		backgroundImage: {
   			'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
   			'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))'

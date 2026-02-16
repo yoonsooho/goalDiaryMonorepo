@@ -56,16 +56,22 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
     };
 
     return (
-        <Card className="w-[400px]">
-            <CardHeader className="space-y-1">
-                <CardTitle className="text-2xl text-center">회원가입</CardTitle>
+        <Card className="w-full max-w-[400px] mx-auto bg-transparent border-0 shadow-none p-0">
+            <CardHeader className="space-y-1 px-0 pt-0">
+                <CardTitle className="text-2xl text-center text-gray-900">회원가입</CardTitle>
                 <CardDescription className="text-center">새 계정을 만드세요</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 px-0 pb-0">
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="userId">사용자 ID</Label>
-                        <Input id="userId" type="text" placeholder="사용자 ID를 입력하세요" {...register("userId")} />
+                        <Input
+                        id="userId"
+                        type="text"
+                        placeholder="사용자 ID를 입력하세요"
+                        className="transition-all duration-200 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:border-blue-400/50"
+                        {...register("userId")}
+                    />
                         {errors.userId && <p className="text-sm text-red-500">{errors.userId.message}</p>}
                     </div>
 
@@ -75,6 +81,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
                             id="username"
                             type="text"
                             placeholder="사용자명을 입력하세요"
+                            className="transition-all duration-200 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:border-blue-400/50"
                             {...register("username")}
                         />
                         {errors.username && <p className="text-sm text-red-500">{errors.username.message}</p>}
@@ -86,6 +93,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
                             id="password"
                             type="password"
                             placeholder="비밀번호를 입력하세요"
+                            className="transition-all duration-200 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:border-blue-400/50"
                             {...register("password")}
                         />
                         {errors.password && <p className="text-sm text-red-500">{errors.password.message}</p>}
@@ -97,6 +105,7 @@ export default function RegisterForm({ onSwitchToLogin }: RegisterFormProps) {
                             id="confirmPassword"
                             type="password"
                             placeholder="비밀번호를 다시 입력하세요"
+                            className="transition-all duration-200 focus-visible:ring-2 focus-visible:ring-blue-500/25 focus-visible:border-blue-400/50"
                             {...register("confirmPassword")}
                         />
                         {errors.confirmPassword && (
