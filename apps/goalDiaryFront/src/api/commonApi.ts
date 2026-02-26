@@ -1,8 +1,12 @@
 import { getAccessTokenFromCookie } from "@/lib/utils";
 
+let isRefreshRedirecting = false;
+
 /** refresh는 미들웨어에서만. 401이면 현재 URL에 ?refresh=1 붙여서 이동 → 미들웨어가 refresh 후 같은 URL로 redirect (중간 화면 없음) */
 function redirectForRefresh() {
     if (typeof window === "undefined") return;
+    if (isRefreshRedirecting) return;
+    isRefreshRedirecting = true;
     const url = new URL(window.location.href);
     // 이미 refresh=1이면 또 설정만 하고, 동일 URL로 한 번만 이동
     url.searchParams.set("refresh", "1");

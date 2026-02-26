@@ -32,7 +32,7 @@ npm run test:coverage
 -   API 호출 파라미터 검증
 -   에러 처리 테스트
 
-### 2. 컴포넌트 테스트 (`src/app/components/auth/__tests__/LoginForm.test.tsx`)
+### 2. 컴포넌트 테스트 (`src/app/pageComponents/auth/__tests__/LoginForm.test.tsx`)
 
 -   LoginForm 컴포넌트의 렌더링 테스트
 -   폼 유효성 검사 테스트
@@ -47,7 +47,7 @@ npm run test:coverage
 -   라우터 네비게이션 테스트
 -   토큰 기반 조건부 쿼리 테스트
 
-### 4. 통합 테스트 (`src/app/components/auth/__tests__/LoginFlow.integration.test.tsx`)
+### 4. 통합 테스트 (`src/app/pageComponents/auth/__tests__/LoginFlow.integration.test.tsx`)
 
 -   전체 로그인 플로우 테스트
 -   네트워크 에러 처리
