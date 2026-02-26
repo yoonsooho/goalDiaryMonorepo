@@ -4,6 +4,7 @@ export const queryClientConfig = {
         queries: {
             staleTime: 60 * 1000, // 1분
             refetchOnWindowFocus: false,
+            retry: false,
         },
     },
 } as const;
